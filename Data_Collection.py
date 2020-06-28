@@ -7,9 +7,8 @@ import json
 import csv
 import re
 import pandas as pd
-import numpy as np
 
-db = create_engine('sqlite:///NBAPlayers.db', echo=True)
+db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
 
 players = Table('players', meta,
@@ -38,8 +37,7 @@ players = Table('players', meta,
                 Column('BLK', Integer),
                 Column('OREB', Integer),
                 Column('DREB', Integer),
-                Column('PF', Integer),
-                )
+                Column('PF', Integer))
 
 
 # converts a list of players stats into team stats
@@ -70,13 +68,97 @@ class Team:
 
     # insert methods for calculating each stat
     def __calculate(self):
+        total_age = 0
+        total_pts = 0
+        total_ftm = 0
+        total_fta = 0
+        total_fgm = 0
+        total_fga = 0
+        total_3pm = 0
+        total_3pa = 0
+        total_ast = 0
+        total_tov = 0
+        total_stl = 0
+        total_blk = 0
+        total_oreb = 0
+        total_dreb = 0
+        total_pf = 0
+        for player in self.players_stats:
+            total_age += player[0]
+            total_pts += player[2]
+            total_ftm += player[3]
+            total_fta += player[4]
+            total_fgm += player[6]
+            total_fga += player[7]
+            total_3pm += player[9]
+            total_3pa += player[10]
+            total_ast += player[12]
+            total_tov += player[13]
+            total_stl += player[14]
+            total_blk += player[15]
+            total_oreb += player[16]
+            total_dreb += player[17]
+            total_pf += player[18]
 
+        # calculate average age
+        self.age = round(total_age/len(self.players_stats), 1)
+
+        # calculate total points
+        self.pts = round(total_pts, 1)
+
+        # calculate effective field goal percentage
+        self.efg_pct = round((total_fgm + (0.5 * total_3pm))/total_fga, 1)
+
+        # calculate total free throw attempts
+        self.fta = round(total_fta, 1)
+
+        # calculate free throw percentage
+        self.ft_pct = round(total_ftm/total_fta, 1)
+
+        # calculate free throw rate
+        self.ftr = round(total_fta/total_fga, 1)
+
+        # calculate total two point attempts
+        self.fg2a = round(total_fga - total_3pa, 1)
+
+        # calculate two point percentage
+        self.fg2_pct = round((total_fgm - total_3pm)/(total_fga - total_3pa), 1)
+
+        # calculate total three point attempts
+        self.fg3a = round(total_3pa, 1)
+
+        # calculate three point percentage
+        self.fg3_pct = round(total_3pm/total_3pa, 1)
+
+        # calculate total assists
+        self.ast = round(total_ast, 1)
+
+        # calculate total turnovers
+        self.tov = round(total_tov, 1)
+
+        # calculate assist to turnover ratio
+        self.ast_tov = round(total_ast/total_tov, 1)
+
+        # calculate total offensive rebounds
+        self.oreb = round(total_oreb, 1)
+
+        # calculate total defensive rebounds
+        self.dreb = round(total_dreb, 1)
+
+        # calculate total steals
+        self.stl = round(total_stl, 1)
+
+        # calculate total blocks
+        self.blk = round(total_blk, 1)
+
+        # calculate total personal fouls
+        self.pf = round(total_pf, 1)
 
     def export(self):
         return [self.age, self.pts, self.efg_pct, self.fta, self.ft_pct, self.ftr, self.fg2a, self.fg2_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.ast_tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
 
 
-# used to store information regarding a specific NBA Game
+# used to store information regarding a single NBA Game
 class NBAGame:
     def __init__(self, game_id, daily_games_json, season):
         self.game_id = game_id
@@ -158,26 +240,9 @@ class NBAGame:
         attrs = vars(self)
         print('\n'.join("%s: %s" % item for item in attrs.items()))
 
-    def mod_min_ratio(home_stats, away_stats):
-        edit_stat_indexes = [3, 4, 5, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18]
-
-        home_total_min = sum(home_stats[0:273:21])
-        home_min_ratio = 5*48/home_total_min
-        for i in range(0, 13):
-            for j in edit_stat_indexes:
-                home_stats[i*21+j] = round(home_stats[i*21+j] * home_min_ratio, 1)
-
-        away_total_min = sum(away_stats[0:273:21])
-        away_min_ratio = 5*48/away_total_min
-        for i in range(0, 13):
-            for j in edit_stat_indexes:
-                away_stats[i*21+j] = round(away_stats[i*21+j] * away_min_ratio, 1)
-
-        return home_stats + away_stats
-
     # inserts seasonal data into an array
     def compile_data(self):
-        game_data_array = []
+        game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
         edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
 
         game_data_array.append(int(self.game_id))  # adds gameID to array
@@ -191,11 +256,11 @@ class NBAGame:
         for player in self.away_players:
             away_total_min += player[1]
 
-        if len(self.home_players) <= 5:
+        if len(self.home_players) < 5:
             home_min_ratio = len(self.home_players)*48/home_total_min
         else:
             home_min_ratio = 5*48/home_total_min
-        if len(self.away_players) <= 5:
+        if len(self.away_players) < 5:
             away_min_ratio = len(self.away_players)*48/away_total_min
         else:
             away_min_ratio = 5*48/away_total_min
@@ -288,7 +353,7 @@ def collect_data(date_range, filename):
             games_skipped = 0
 
             for game_id in game_id_list:
-                if str(game_id)[2] is not "2":
+                if str(game_id)[2] != "2":
                     games_skipped += 1
                     continue
                 target_game = NBAGame(game_id, games, season)
@@ -308,9 +373,8 @@ def collect_data(date_range, filename):
                 raise
 
 
-csv_filename = "../Data/10-11_data.csv"
-start_date = datetime.datetime(2010, 10, 20)
+csv_filename = "Data/10-11_data.csv"
+start_date = datetime.datetime(2010, 10, 26)
 end_date = datetime.datetime(2011, 4, 20)
 date_list = pd.date_range(start_date, end_date)
 collect_data(date_list, csv_filename)
-# print(get_seasonal_stats(2019))

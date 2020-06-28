@@ -34,8 +34,7 @@ players = Table('players', meta,
                 Column('BLK', Integer),
                 Column('OREB', Integer),
                 Column('DREB', Integer),
-                Column('PF', Integer),
-                )
+                Column('PF', Integer))
 meta.create_all(db)
 
 
