@@ -1,11 +1,45 @@
 import urllib.request
 from urllib.error import HTTPError
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 import datetime
 import gzip
 import json
 import csv
 import re
 import pandas as pd
+import numpy as np
+
+db = create_engine('sqlite:///NBAPlayers.db', echo=True)
+meta = MetaData()
+
+players = Table('players', meta,
+                Column('NAME', String),
+                Column('PLAYER_ID', String, primary_key=True),
+                Column('TEAM', String),
+                Column('TEAM_ID', String),
+                Column('YEAR', String, primary_key=True),
+                Column('AGE', Integer),
+                Column('HEIGHT', Integer),
+                Column('WEIGHT', Integer),
+                Column('MIN', Integer),
+                Column('PTS', Integer),
+                Column('FTM', Integer),
+                Column('FTA', Integer),
+                Column('FT_PCT', Integer),
+                Column('FGM', Integer),
+                Column('FGA', Integer),
+                Column('FG_PCT', Integer),
+                Column('FG3M', Integer),
+                Column('FG3A', Integer),
+                Column('FG3_PCT', Integer),
+                Column('AST', Integer),
+                Column('TOV', Integer),
+                Column('STL', Integer),
+                Column('BLK', Integer),
+                Column('OREB', Integer),
+                Column('DREB', Integer),
+                Column('PF', Integer),
+                )
 
 
 # converts a list of players stats into team stats
@@ -32,22 +66,29 @@ class Team:
         self.blk = None
         self.pf = None
 
+        self.__calculate()
+
     # insert methods for calculating each stat
+    def __calculate(self):
+
+
+    def export(self):
+        return [self.age, self.pts, self.efg_pct, self.fta, self.ft_pct, self.ftr, self.fg2a, self.fg2_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.ast_tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
 
 
 # used to store information regarding a specific NBA Game
 class NBAGame:
-    def __init__(self, game_id, json_file, seasonal_stats):
+    def __init__(self, game_id, daily_games_json, season):
         self.game_id = game_id
-        self.json_file = json_file
-        self.seasonal_stats = seasonal_stats
+        self.daily_games_json = daily_games_json
+        self.season = season
 
-        self.home_team_id = None
-        self.away_team_id = None
-        self.home_team_points = None
-        self.away_team_points = None
-        self.home_team_stats = []
-        self.away_team_stats = []
+        self.home_id = None
+        self.away_id = None
+        self.home_points = None
+        self.away_points = None
+        self.home_players = []
+        self.away_players = []
         self.home_win = None
 
         self.__set_team_ids()
@@ -57,29 +98,28 @@ class NBAGame:
 
     # finds the match lineup in "Series Standings" and sets the appropriate values
     def __set_team_ids(self):
-        for i in range(len(self.json_file["resultSets"][2]["rowSet"])):  # increment through all games
-            if self.json_file["resultSets"][2]["rowSet"][i][0] == self.game_id:  # find matching game
-                self.home_team_id = self.json_file["resultSets"][2]["rowSet"][i][1]
-                self.away_team_id = self.json_file["resultSets"][2]["rowSet"][i][2]
+        for i in range(len(self.daily_games_json["resultSets"][2]["rowSet"])):  # increment through all games
+            if self.daily_games_json["resultSets"][2]["rowSet"][i][0] == self.game_id:  # find matching game
+                self.home_id = self.daily_games_json["resultSets"][2]["rowSet"][i][1]
+                self.away_id = self.daily_games_json["resultSets"][2]["rowSet"][i][2]
                 return
 
     # finds the points for each team in "Line Score" and sets the appropriate values
     def __set_points(self):
-        for i in range(len(self.json_file["resultSets"][1]["rowSet"])):  # increment through all teams
-            if self.json_file["resultSets"][1]["rowSet"][i][3] == self.home_team_id:  # match home id
-                self.home_team_points = self.json_file["resultSets"][1]["rowSet"][i][22]
-            if self.json_file["resultSets"][1]["rowSet"][i][3] == self.away_team_id:  # match away id
-                self.away_team_points = self.json_file["resultSets"][1]["rowSet"][i][22]
-            if self.home_team_points is not None and self.away_team_points is not None:  # stops when both are filled
+        for i in range(len(self.daily_games_json["resultSets"][1]["rowSet"])):  # increment through all teams
+            if self.daily_games_json["resultSets"][1]["rowSet"][i][3] == self.home_id:  # match home id
+                self.home_points = self.daily_games_json["resultSets"][1]["rowSet"][i][22]
+            if self.daily_games_json["resultSets"][1]["rowSet"][i][3] == self.away_id:  # match away id
+                self.away_points = self.daily_games_json["resultSets"][1]["rowSet"][i][22]
+            if self.home_points is not None and self.away_points is not None:  # stops when both are filled
                 return
 
     # finds player stats in "PlayerStats" and sets the appropriate values
     def __set_seasonal_stats(self):
-        self.json_file = stats_in_game(self.game_id)  # uses game-specific box score JSON
-        for player in self.json_file["resultSets"][0]["rowSet"]:  # increment through all players
+        game_stats_json = stats_in_game(self.game_id)  # uses game-specific box score JSON
+        for player in game_stats_json["resultSets"][0]["rowSet"]:  # increment through all players
             try:
                 mins_played = player[8]
-
                 if mins_played is None:
                     mins_played = 0
                 else:
@@ -87,19 +127,28 @@ class NBAGame:
                     mins_played = round((int(timestamp[0]) * 60 + int(timestamp[1])) / 60, 1)
 
                 if mins_played > 0:
-                    seasonal_stats = self.seasonal_stats[str(player[5])]
-                    seasonal_stats.append(mins_played)
-                    if player[1] == self.home_team_id:  # add player to respective team
-                        self.home_team_players.append(seasonal_stats)
-                    else:
-                        self.away_team_players.append(seasonal_stats)
+                    year = str(self.season)
+                    player_id = str(player[4])
 
-            except KeyError:
+                    query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
+                    conn = db.connect()
+                    result = conn.execute(query)
+                    result = result.fetchone().values()
+
+                    del result[6:8]
+                    del result[:5]
+
+                    if player[1] == self.home_id:  # add player to respective team
+                        self.home_players.append(result)
+                    else:
+                        self.away_players.append(result)
+            except:
+                print(Exception)
                 continue
 
     # compares scores and determines which team won
     def __set_result(self):
-        if self.home_team_points > self.away_team_points:
+        if self.home_points > self.away_points:
             self.home_win = True
         else:
             self.home_win = False
@@ -109,66 +158,58 @@ class NBAGame:
         attrs = vars(self)
         print('\n'.join("%s: %s" % item for item in attrs.items()))
 
+    def mod_min_ratio(home_stats, away_stats):
+        edit_stat_indexes = [3, 4, 5, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18]
+
+        home_total_min = sum(home_stats[0:273:21])
+        home_min_ratio = 5*48/home_total_min
+        for i in range(0, 13):
+            for j in edit_stat_indexes:
+                home_stats[i*21+j] = round(home_stats[i*21+j] * home_min_ratio, 1)
+
+        away_total_min = sum(away_stats[0:273:21])
+        away_min_ratio = 5*48/away_total_min
+        for i in range(0, 13):
+            for j in edit_stat_indexes:
+                away_stats[i*21+j] = round(away_stats[i*21+j] * away_min_ratio, 1)
+
+        return home_stats + away_stats
+
     # inserts seasonal data into an array
     def compile_data(self):
-        game_data_array = []  # stores game statistics --> will be a row in the csv file
-        stat_indexes = [0, 63, 64, 5, 25, 6, 8, 9, 11, 12, 14, 15, 16, 18, 19, 20, 21, 23, 26, 47, 48]
-        edit_stat_indexes = [6, 9, 12, 15, 16, 18, 19, 20, 21, 23, 25, 26]  # indexes of stats to be modified
-        stats_per_player = 21
+        game_data_array = []
+        edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
 
         game_data_array.append(int(self.game_id))  # adds gameID to array
         game_data_array.append(int(self.home_win))  # adds win result to array
 
-        # loops through all players on the home team and adds relevant data to array
-        for i in range(len(self.home_team_players)):
-            if i > 12:  # break if more than 13 players in list
-                break
+        home_total_min = 0
+        away_total_min = 0
 
-            mins_played = self.home_team_players[i][80]
-            mins_ratio = mins_played / self.home_team_players[i][5]
+        for player in self.home_players:
+            home_total_min += player[1]
+        for player in self.away_players:
+            away_total_min += player[1]
 
-            for x in stat_indexes:
-                if x is 5:
-                    stat = mins_played
-                else:
-                    stat = self.home_team_players[i][x]
-                    if stat is None:
-                        stat = 0
+        if len(self.home_players) <= 5:
+            home_min_ratio = len(self.home_players)*48/home_total_min
+        else:
+            home_min_ratio = 5*48/home_total_min
+        if len(self.away_players) <= 5:
+            away_min_ratio = len(self.away_players)*48/away_total_min
+        else:
+            away_min_ratio = 5*48/away_total_min
 
-                if x in edit_stat_indexes:
-                    game_data_array.append(round(stat * mins_ratio, 1))
-                else:
-                    game_data_array.append(stat)
+        # loops through all players on both teams and edits stats using minutes ratio
+        for player_number in range(len(self.home_players)):
+            for index in edit_stat_indexes:
+                self.home_players[player_number][index] = self.home_players[player_number][index] * home_min_ratio
+        for player_number in range(len(self.away_players)):
+            for index in edit_stat_indexes:
+                self.away_players[player_number][index] = self.away_players[player_number][index] * away_min_ratio
 
-        if len(self.home_team_players) < 13:  # fills in 0s if less than 13 players
-            missing_players = 13 - len(self.home_team_players)
-            for i in range(missing_players * stats_per_player):
-                game_data_array.append(0)
-
-        for i in range(len(self.away_team_players)):
-            if i > 12:  # break if more than 13 players in list
-                break
-
-            mins_played = self.away_team_players[i][80]
-            mins_ratio = mins_played / (self.away_team_players[i][5])
-
-            for x in stat_indexes:
-                if x is 5:
-                    stat = mins_played
-                else:
-                    stat = self.away_team_players[i][x]
-                    if stat is None:
-                        stat = 0
-
-                if x in edit_stat_indexes:
-                    game_data_array.append(round(stat * mins_ratio, 1))
-                else:
-                    game_data_array.append(stat)
-
-        if len(self.away_team_players) < 13:  # fills in 0s if less than 13 players
-            missing_players = 13 - len(self.away_team_players)
-            for i in range(missing_players * stats_per_player):
-                game_data_array.append(0)
+        game_data_array.extend(Team(self.home_players).export())
+        game_data_array.extend(Team(self.away_players).export())
 
         return game_data_array
 
@@ -209,59 +250,6 @@ def stats_in_game(game_id):
     return json_file
 
 
-# gathers seasonal stats for all players during a specified season
-def get_seasonal_stats(season):
-    param = f"{season}-{season % 100 + 1}"
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
-    season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive", "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "Referer": "https://stats.nba.com/players/traditional/?sort=PTS&dir=-1", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
-
-    req = urllib.request.Request(url=season_stats_url, headers=season_stats_headers)
-    response = urllib.request.urlopen(req)
-    data = response.read()
-    data = str(gzip.decompress(data), 'utf-8')
-    json_file = json.loads(data)
-
-    season_stats = {}
-    for player in json_file["resultSets"][0]["rowSet"]:
-        player_name = str(player[1])
-        del player[0: 4]
-        del player[30:]
-        season_stats[player_name] = player
-
-    param = f"{season}-{season % 100 + 1}"
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
-    season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive", "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "Referer": "https://stats.nba.com/players/traditional/?sort=PTS&dir=-1", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
-
-    req = urllib.request.Request(url=season_stats_url, headers=season_stats_headers)
-    response = urllib.request.urlopen(req)
-    data = response.read()
-    data = str(gzip.decompress(data), 'utf-8')
-    json_file = json.loads(data)
-
-    for player in json_file["resultSets"][0]["rowSet"]:
-        player_name = str(player[1])
-        del player[0: 10]
-        del player[32:]
-        season_stats[player_name] = season_stats[player_name] + player
-
-    param = f"{season}-{season % 100 + 1}"
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerbiostats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight="
-    season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive", "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "Referer": "https://stats.nba.com/players/traditional/?sort=PTS&dir=-1", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
-
-    req = urllib.request.Request(url=season_stats_url, headers=season_stats_headers)
-    response = urllib.request.urlopen(req)
-    data = response.read()
-    data = str(gzip.decompress(data), 'utf-8')
-    json_file = json.loads(data)
-
-    for player in json_file["resultSets"][0]["rowSet"]:
-        player_name = str(player[1])
-        del player[0: 5]
-        season_stats[player_name] = season_stats[player_name] + player
-
-    return season_stats
-
-
 # converts data into a csv file
 def export_data(game_day_matrix, filename):
     with open(filename, 'a', newline='') as csv_file:
@@ -276,10 +264,8 @@ def collect_data(date_range, filename):
 
     if start_month > 4:
         season = start_year
-        seasonal_stats = get_seasonal_stats(season)
     else:
         season = start_year - 1
-        seasonal_stats = get_seasonal_stats(season)
 
     for date in date_range:
         year = date.year
@@ -291,7 +277,6 @@ def collect_data(date_range, filename):
 
         if month == 10 and changed_season is False:
             season += 1
-            seasonal_stats = get_seasonal_stats(season)
             changed_season = True
         elif month != 10:
             changed_season = False
@@ -306,7 +291,7 @@ def collect_data(date_range, filename):
                 if str(game_id)[2] is not "2":
                     games_skipped += 1
                     continue
-                target_game = NBAGame(game_id, games, seasonal_stats)
+                target_game = NBAGame(game_id, games, season)
                 game_data = target_game.compile_data()
                 game_day_matrix.append(game_data)
 
