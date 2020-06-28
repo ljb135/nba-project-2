@@ -9,6 +9,7 @@ import re
 import pandas as pd
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
+conn = db.connect()
 meta = MetaData()
 
 players = Table('players', meta,
@@ -203,30 +204,26 @@ class NBAGame:
             try:
                 mins_played = player[8]
                 if mins_played is None:
-                    mins_played = 0
+                    continue
+
+                year = str(self.season)
+                player_id = str(player[4])
+
+                query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
+                result = conn.execute(query)
+
+                result = result.fetchone().values()
+                del result[6:8]
+                del result[:5]
+
+                if player[1] == self.home_id:  # add player to respective team
+                    self.home_players.append(result)
                 else:
-                    timestamp = re.match(r"(\d+):(\d+)", mins_played).groups()
-                    mins_played = round((int(timestamp[0]) * 60 + int(timestamp[1])) / 60, 1)
-
-                if mins_played > 0:
-                    year = str(self.season)
-                    player_id = str(player[4])
-
-                    query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
-                    conn = db.connect()
-                    result = conn.execute(query)
-                    result = result.fetchone().values()
-
-                    del result[6:8]
-                    del result[:5]
-
-                    if player[1] == self.home_id:  # add player to respective team
-                        self.home_players.append(result)
-                    else:
-                        self.away_players.append(result)
-            except:
-                print(Exception)
+                    self.away_players.append(result)
+            except AttributeError:
                 continue
+            except Exception as e:
+                print(e)
 
     # compares scores and determines which team won
     def __set_result(self):
@@ -323,54 +320,57 @@ def export_data(game_day_matrix, filename):
 
 
 def collect_data(date_range, filename):
-    start_month = date_range[0].month
-    start_year = date_range[0].year
-    changed_season = True
+    try:
+        start_month = date_range[0].month
+        start_year = date_range[0].year
+        changed_season = True
 
-    if start_month > 4:
-        season = start_year
-    else:
-        season = start_year - 1
+        if start_month > 4:
+            season = start_year
+        else:
+            season = start_year - 1
 
-    for date in date_range:
-        year = date.year
-        month = date.month
-        day = date.day
+        for date in date_range:
+            year = date.year
+            month = date.month
+            day = date.day
 
-        if month in range(5, 10):
-            continue
+            if month in range(5, 10):
+                continue
 
-        if month == 10 and changed_season is False:
-            season += 1
-            changed_season = True
-        elif month != 10:
-            changed_season = False
+            if month == 10 and changed_season is False:
+                season += 1
+                changed_season = True
+            elif month != 10:
+                changed_season = False
 
-        try:
-            games = games_on_date(str(month).zfill(2), str(day).zfill(2), year)
-            game_id_list = get_game_ids(games)
-            game_day_matrix = []
-            games_skipped = 0
+            try:
+                games = games_on_date(str(month).zfill(2), str(day).zfill(2), year)
+                game_id_list = get_game_ids(games)
+                game_day_matrix = []
+                games_skipped = 0
 
-            for game_id in game_id_list:
-                if str(game_id)[2] != "2":
-                    games_skipped += 1
-                    continue
-                target_game = NBAGame(game_id, games, season)
-                game_data = target_game.compile_data()
-                game_day_matrix.append(game_data)
+                for game_id in game_id_list:
+                    if str(game_id)[2] != "2":
+                        games_skipped += 1
+                        continue
+                    target_game = NBAGame(game_id, games, season)
+                    game_data = target_game.compile_data()
+                    game_day_matrix.append(game_data)
 
-            time = datetime.datetime.now().strftime("%I:%M:%S %p")
-            games_added = len(game_id_list) - games_skipped
+                time = datetime.datetime.now().strftime("%I:%M:%S %p")
+                games_added = len(game_id_list) - games_skipped
 
-            export_data(game_day_matrix, filename)
-            print(str(month).zfill(2), str(day).zfill(2), year, f": {games_added} games added\t({time})")
+                export_data(game_day_matrix, filename)
+                print(str(month).zfill(2), str(day).zfill(2), year, f": {games_added} games added\t({time})")
 
-        except HTTPError as ex:
-            if ex.code == 400:
-                break
-            else:
-                raise
+            except HTTPError as ex:
+                if ex.code == 400:
+                    break
+                else:
+                    raise
+    except KeyboardInterrupt:
+        exit()
 
 
 csv_filename = "Data/10-11_data.csv"
