@@ -1,6 +1,6 @@
 import urllib.request
 from urllib.error import HTTPError
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_, text
 import datetime
 import gzip
 import json
@@ -9,8 +9,8 @@ import re
 import pandas as pd
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
-conn = db.connect()
 meta = MetaData()
+conn = db.connect()
 
 players = Table('players', meta,
                 Column('NAME', String),
@@ -200,30 +200,36 @@ class NBAGame:
     # finds player stats in "PlayerStats" and sets the appropriate values
     def __set_seasonal_stats(self):
         game_stats_json = stats_in_game(self.game_id)  # uses game-specific box score JSON
+        player_ids = []
         for player in game_stats_json["resultSets"][0]["rowSet"]:  # increment through all players
             try:
                 mins_played = player[8]
-                if mins_played is None:
-                    continue
+                if mins_played is not None:
+                    player_ids.append(str(player[4]))
 
-                year = str(self.season)
-                player_id = str(player[4])
-
-                query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
-                result = conn.execute(query)
-
-                result = result.fetchone().values()
-                del result[6:8]
-                del result[:5]
-
-                if player[1] == self.home_id:  # add player to respective team
-                    self.home_players.append(result)
-                else:
-                    self.away_players.append(result)
             except AttributeError:
                 continue
             except Exception as e:
                 print(e)
+
+        # queries the stats for all of the players who played in the game
+        query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(player_ids)))
+        result = conn.execute(query).fetchall()
+        print(result)
+
+        for player in result:
+            print(player)
+            team_id = player[3]
+            del player[6:8]
+            del player[:5]
+
+            if team_id == self.home_id:  # add player to respective team
+                self.home_players.append(player)
+            else:
+                self.away_players.append(player)
+
+        print(self.away_players)
+        print(self.home_players)
 
     # compares scores and determines which team won
     def __set_result(self):
