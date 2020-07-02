@@ -7,6 +7,7 @@ import json
 import csv
 import re
 import pandas as pd
+import numpy as np
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
@@ -69,91 +70,78 @@ class Team:
 
     # insert methods for calculating each stat
     def __calculate(self):
-        total_age = 0
-        total_pts = 0
-        total_ftm = 0
-        total_fta = 0
-        total_fgm = 0
-        total_fga = 0
-        total_3pm = 0
-        total_3pa = 0
-        total_ast = 0
-        total_tov = 0
-        total_stl = 0
-        total_blk = 0
-        total_oreb = 0
-        total_dreb = 0
-        total_pf = 0
-        for player in self.players_stats:
-            total_age += player[0]
-            total_pts += player[2]
-            total_ftm += player[3]
-            total_fta += player[4]
-            total_fgm += player[6]
-            total_fga += player[7]
-            total_3pm += player[9]
-            total_3pa += player[10]
-            total_ast += player[12]
-            total_tov += player[13]
-            total_stl += player[14]
-            total_blk += player[15]
-            total_oreb += player[16]
-            total_dreb += player[17]
-            total_pf += player[18]
+
+        sum_stats = np.array(self.players_stats).sum(axis=0)
+
+        total_age = sum_stats[0]
+        total_pts = sum_stats[2]
+        total_ftm = sum_stats[3]
+        total_fta = sum_stats[4]
+        total_fgm = sum_stats[6]
+        total_fga = sum_stats[7]
+        total_3pm = sum_stats[9]
+        total_3pa = sum_stats[10]
+        total_ast = sum_stats[12]
+        total_tov = sum_stats[13]
+        total_stl = sum_stats[14]
+        total_blk = sum_stats[15]
+        total_oreb = sum_stats[16]
+        total_dreb = sum_stats[17]
+        total_pf = sum_stats[18]
 
         # calculate average age
         self.age = round(total_age/len(self.players_stats), 1)
 
         # calculate total points
-        self.pts = round(total_pts, 1)
+        self.pts = round(total_pts, 2)
 
         # calculate effective field goal percentage
-        self.efg_pct = round((total_fgm + (0.5 * total_3pm))/total_fga, 1)
+        self.efg_pct = round((total_fgm + (0.5 * total_3pm))/total_fga, 3)
 
         # calculate total free throw attempts
-        self.fta = round(total_fta, 1)
+        self.fta = round(total_fta, 2)
 
         # calculate free throw percentage
-        self.ft_pct = round(total_ftm/total_fta, 1)
+        self.ft_pct = round(total_ftm/total_fta, 3)
 
         # calculate free throw rate
-        self.ftr = round(total_fta/total_fga, 1)
+        self.ftr = round(total_fta/total_fga, 3)
 
         # calculate total two point attempts
-        self.fg2a = round(total_fga - total_3pa, 1)
+        self.fg2a = round(total_fga - total_3pa, 2)
 
         # calculate two point percentage
-        self.fg2_pct = round((total_fgm - total_3pm)/(total_fga - total_3pa), 1)
+        self.fg2_pct = round((total_fgm - total_3pm)/(total_fga - total_3pa), 3)
 
         # calculate total three point attempts
-        self.fg3a = round(total_3pa, 1)
+        self.fg3a = round(total_3pa, 2)
 
         # calculate three point percentage
-        self.fg3_pct = round(total_3pm/total_3pa, 1)
+        self.fg3_pct = round(total_3pm/total_3pa, 3)
 
         # calculate total assists
-        self.ast = round(total_ast, 1)
+        self.ast = round(total_ast, 2)
 
         # calculate total turnovers
-        self.tov = round(total_tov, 1)
+        self.tov = round(total_tov, 2)
 
         # calculate assist to turnover ratio
-        self.ast_tov = round(total_ast/total_tov, 1)
+        self.ast_tov = round(total_ast/total_tov, 3)
 
         # calculate total offensive rebounds
-        self.oreb = round(total_oreb, 1)
+        self.oreb = round(total_oreb, 2)
 
         # calculate total defensive rebounds
-        self.dreb = round(total_dreb, 1)
+        self.dreb = round(total_dreb, 2)
 
         # calculate total steals
-        self.stl = round(total_stl, 1)
+        self.stl = round(total_stl, 2)
 
         # calculate total blocks
-        self.blk = round(total_blk, 1)
+        self.blk = round(total_blk, 2)
 
         # calculate total personal fouls
-        self.pf = round(total_pf, 1)
+        self.pf = round(total_pf, 2)
 
     def export(self):
         return [self.age, self.pts, self.efg_pct, self.fta, self.ft_pct, self.ftr, self.fg2a, self.fg2_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.ast_tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
