@@ -200,35 +200,39 @@ class NBAGame:
     # finds player stats in "PlayerStats" and sets the appropriate values
     def __set_seasonal_stats(self):
         game_stats_json = stats_in_game(self.game_id)  # uses game-specific box score JSON
-        player_ids = []
+
+        home_player_ids = []
+        away_player_ids = []
+
         for player in game_stats_json["resultSets"][0]["rowSet"]:  # increment through all players
             try:
                 mins_played = player[8]
                 if mins_played is not None:
-                    player_ids.append(str(player[4]))
-
+                    if player[1] == self.home_id:
+                        home_player_ids.append(str(player[4]))
+                    else:
+                        away_player_ids.append(str(player[4]))
             except AttributeError:
                 continue
             except Exception as e:
                 print(e)
 
         # queries the stats for all of the players who played in the game
-        query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(player_ids)))
+        query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(home_player_ids)))
         result = conn.execute(query).fetchall()
-
         for player in result:
-            player_stats = player.items()
+            player_stats = player.values()
             del player_stats[6:8]
             del player_stats[:5]
-            print(player_stats)
+            self.home_players.append(player_stats)
 
-            # if team_id == self.home_id:  # add player to respective team
-            #     self.home_players.append(player)
-            # else:
-            #     self.away_players.append(player)
-
-        print(self.away_players)
-        print(self.home_players)
+        query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(away_player_ids)))
+        result = conn.execute(query).fetchall()
+        for player in result:
+            player_stats = player.values()
+            del player_stats[6:8]
+            del player_stats[:5]
+            self.away_players.append(player_stats)
 
     # compares scores and determines which team won
     def __set_result(self):
