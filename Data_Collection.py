@@ -215,18 +215,17 @@ class NBAGame:
         # queries the stats for all of the players who played in the game
         query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(player_ids)))
         result = conn.execute(query).fetchall()
-        print(result)
 
         for player in result:
-            print(player)
-            team_id = player[3]
-            del player[6:8]
-            del player[:5]
+            player_stats = player.items()
+            del player_stats[6:8]
+            del player_stats[:5]
+            print(player_stats)
 
-            if team_id == self.home_id:  # add player to respective team
-                self.home_players.append(player)
-            else:
-                self.away_players.append(player)
+            # if team_id == self.home_id:  # add player to respective team
+            #     self.home_players.append(player)
+            # else:
+            #     self.away_players.append(player)
 
         print(self.away_players)
         print(self.home_players)
