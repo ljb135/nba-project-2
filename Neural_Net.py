@@ -20,8 +20,9 @@ def analyze_train(train_csv_filename, test_csv_filename):
     y_test = test_dataset[:, 1]
 
     model = Sequential()
-    model.add(Dense(32, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
-    model.add(Dropout(0.1))
+    model.add(Dense(36, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
+    model.add(Dropout(0.05))
+    model.add(Dense(8, input_dim=36, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -29,7 +30,7 @@ def analyze_train(train_csv_filename, test_csv_filename):
     # es_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     # history = model.fit(x_train, y_train, epochs=75, batch_size=128, validation_split=0.2, verbose=1, callbacks=[es_callback])
-    history = model.fit(x_train, y_train, epochs=75, batch_size=128, validation_split=0.2, verbose=1)
+    history = model.fit(x_train, y_train, epochs=400, batch_size=32, validation_split=0.2, verbose=1)
     print(model.evaluate(x_test, y_test))
 
     # graph training vs. validation accuracy over epochs
