@@ -1,16 +1,16 @@
 import numpy as np
 import pandas as pd
-from keras.callbacks import EarlyStopping
-from keras.models import Model, Sequential, load_model
-from keras.layers import Dense, Input, Concatenate, Lambda, Dropout
-from keras.constraints import maxnorm
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Model, Sequential, load_model
+from tensorflow.keras.layers import Dense, Input, Concatenate, Lambda, Dropout
+from tensorflow.keras.constraints import MaxNorm
 import csv
 import matplotlib.pyplot as plt
 
 
 def analyze_train(train_csv_filename, test_csv_filename):
-    train_dataset = loadtxt(train_csv_filename, delimiter=',')
-    test_dataset = loadtxt(test_csv_filename, delimiter=',')
+    train_dataset = np.loadtxt(train_csv_filename, delimiter=',')
+    test_dataset = np.loadtxt(test_csv_filename, delimiter=',')
 
     # split into input (X) and output (Y) variables
     x_train = train_dataset[:, 2:]
@@ -20,7 +20,7 @@ def analyze_train(train_csv_filename, test_csv_filename):
     y_test = test_dataset[:, 1]
 
     model = Sequential()
-    model.add(Dense(32, input_dim=38, activation='relu', kernel_constraint=maxnorm(3)))
+    model.add(Dense(32, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
     model.add(Dropout(0.1))
     model.add(Dense(1, activation='sigmoid'))
 
@@ -55,8 +55,8 @@ def analyze_train(train_csv_filename, test_csv_filename):
 
 
 def analyze_train_v2(train_csv_filename, test_csv_filename):
-    train_dataset = loadtxt(train_csv_filename, delimiter=',')
-    test_dataset = loadtxt(test_csv_filename, delimiter=',')
+    train_dataset = np.loadtxt(train_csv_filename, delimiter=',')
+    test_dataset = np.loadtxt(test_csv_filename, delimiter=',')
 
     # split into input (X) and output (Y) variables
     x_train = train_dataset[:, 2:]
@@ -102,7 +102,7 @@ def analyze_train_v2(train_csv_filename, test_csv_filename):
 
 
 def predict(model, predict_csv_filename):
-    predict_dataset = loadtxt(predict_csv_filename, delimiter=',')
+    predict_dataset = np.loadtxt(predict_csv_filename, delimiter=',')
 
     x = predict_dataset[:, 2:]
     prediction = model.predict(x)
@@ -136,5 +136,5 @@ def read_csv_file(filename):
     return data_matrix
 
 
-neural_net = analyze_train("/Data/Training_Data.csv", "/Data/Testing_Data.csv")
+neural_net = analyze_train("Data/Training_Data.csv", "Data/Testing_Data.csv")
 

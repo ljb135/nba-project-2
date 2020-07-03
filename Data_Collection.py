@@ -370,8 +370,8 @@ def collect_data(date_range, filename):
         exit()
 
 
-csv_filename = "Data/10-11_data.csv"
-start_date = datetime.datetime(2010, 10, 26)
-end_date = datetime.datetime(2011, 4, 20)
+csv_filename = "Data/12-13_data.csv"
+start_date = datetime.datetime(2012, 10, 30)
+end_date = datetime.datetime(2013, 4, 17)
 date_list = pd.date_range(start_date, end_date)
 collect_data(date_list, csv_filename)
