@@ -21,9 +21,10 @@ def analyze_train(train_csv_filename, test_csv_filename):
     y_test = test_dataset[:, 1]
 
     model = Sequential()
-    model.add(Dense(36, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
-    model.add(Dropout(0.05))
-    model.add(Dense(8, input_dim=36, activation='relu'))
+
+    # BEST RESULTS
+    model.add(Dense(32, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
+    model.add(Dropout(0.4))
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -31,7 +32,7 @@ def analyze_train(train_csv_filename, test_csv_filename):
     # es_callback = EarlyStopping(monitor='val_loss', patience=5)
 
     # history = model.fit(x_train, y_train, epochs=75, batch_size=128, validation_split=0.2, verbose=1, callbacks=[es_callback])
-    history = model.fit(x_train, y_train, epochs=100, batch_size=32, validation_split=0.2, verbose=1)
+    history = model.fit(x_train, y_train, epochs=250, batch_size=32, validation_split=0.2, verbose=1)
     print(model.evaluate(x_test, y_test))
 
     # graph training vs. validation accuracy over epochs
@@ -139,4 +140,4 @@ def read_csv_file(filename):
 
 
 neural_net = analyze_train("Data/Training_Data.csv", "Data/Testing_Data.csv")
-
+neural_net.save("NBA_Game_model.h5")
