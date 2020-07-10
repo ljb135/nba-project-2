@@ -1,0 +1,280 @@
+  html {
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Raleway', serif;
+    color: #444;
+    background-image: url("https://wallpaperaccess.com/full/103114.jpg");
+    min-height: 100%;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .heading {
+    text-align: center;
+    background-color: black;
+    color: white;
+    padding: 20px;
+  }
+
+  .subheading {
+    text-align: center;
+    padding: 15px;
+  }
+
+  .submit {
+    text-align: center;
+    padding: 10px;
+  }
+
+  .disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .buttons {
+    font-family: 'Raleway', sans-serif;
+    font-weight: light;
+    text-align: center;
+    display: block;
+    margin: auto;
+    padding: 5px;
+  }
+
+  button {
+    font-family: 'Raleway', sans-serif;
+    font-weight: light;
+  }
+
+  .container2 {
+    text-align: center;
+    background-color: FireBrick;
+    width: auto;
+    height: auto;
+    color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+
+  .container3 {
+    font-family: 'Raleway', serif;
+    font-weight: normal;
+    display: block;
+    font-size: 24px;
+    margin: auto;
+    padding: 15px;
+    color: black;
+  }
+
+  .container {
+    text-align: center;
+    background-color: MintCream;
+    max-width: 940px;
+    width: 85%;
+    border: 1px black;
+    border-style: solid;
+    border-width: 6px;
+    overflow: hidden;
+    margin: 25px auto 25px auto;
+    height: auto;
+  }
+
+  .container::before {
+    background-size: cover;
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    opacity: 0.4;
+  }
+
+  div.jumbo {
+    padding: 10px 0 30px 0;
+    background-color: #eeeeee;
+    -webkit-border-radius: 6px;
+       -moz-border-radius: 6px;
+            border-radius: 6px;
+  }
+
+
+  h1 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: light;
+    display: block;
+    font-size: 42px;
+    margin: auto;
+  }
+
+  h2 {
+    font-family: 'Raleway', serif;
+    font-weight: normal;
+    display: block;
+    font-size: 25px;
+    margin: auto;
+    color: black;
+  }
+
+  h3 {
+    font-family: 'Raleway', serif;
+    font-weight: normal;
+    display: block;
+    font-size: 20px;
+    margin: auto;
+    color: black;
+    padding-bottom: 20px;
+  }
+
+  h4 {
+    font-family: 'Raleway', serif;
+    font-weight: normal;
+    display: inline;
+    font-size: 18px;
+    margin: auto auto auto 10px;
+    color: black;
+  }
+
+  h5 {
+    font-family: 'Raleway', serif;
+    font-weight: normal;
+    display: block;
+    font-size: 30px;
+    margin: auto;
+    color: black;
+    padding-bottom: 15px;
+  }
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+select {
+    width: 150px;
+    font-family: 'Raleway', serif;
+    font-size: 15px;
+}
+
+input {
+    font-family: 'Raleway', serif;
+    text-align: center
+    background-color: white
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change the link color to #111 (black) on hover */
+li a:hover {
+    background-color: #111;
+}
+
+form label {
+  font-family: Lucida Sans Unicode;
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+  padding: 10px 0;
+}
+
+form input#seed, form input#diversity, form input#words {
+  height: 50px;
+  width: 400px;
+  background-color: #fafafa;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #cccccc;
+  padding: 5px;
+  font-size: 24px;
+  margin: 12px;
+}
+
+form textarea#message {
+  width: 500px;
+  height: 100px;
+  background-color: #fafafa;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
+  border: 1px solid #cccccc;
+  margin-bottom: 10px;
+  padding: 5px;
+  font-size: 1.1em;
+}
+
+form input#submit {
+  height: auto;
+  width: auto;
+  margin: auto auto auto auto;
+  padding: 10px;
+  display: -webkit-box;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
+  border: 1px solid #d8d8d8;
+  font-weight: bold;
+  font-size:22px;
+  text-align: center;
+  color: #000000;
+  background-color: #f4f4f4;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f4f4f4), color-stop(100%, #e5e5e5));
+  background-image: -webkit-linear-gradient(top, #f4f4f4, #e5e5e5);
+  background-image: -moz-linear-gradient(top, #f4f4f4, #e5e5e5);
+  background-image: -ms-linear-gradient(top, #f4f4f4, #e5e5e5);
+  background-image: -o-linear-gradient(top, #f4f4f4, #e5e5e5);
+  background-image: linear-gradient(top, #f4f4f4, #e5e5e5);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#f4f4f4, endColorstr=#e5e5e5);
+}
+
+form input#submit:hover{
+  cursor: pointer;
+  border:1px solid #c1c1c1;
+  background-color: #dbdbdb;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#dbdbdb), color-stop(100%, #cccccc));
+  background-image: -webkit-linear-gradient(top, #dbdbdb, #cccccc);
+  background-image: -moz-linear-gradient(top, #dbdbdb, #cccccc);
+  background-image: -ms-linear-gradient(top, #dbdbdb, #cccccc);
+  background-image: -o-linear-gradient(top, #dbdbdb, #cccccc);
+  background-image: linear-gradient(top, #dbdbdb, #cccccc);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#dbdbdb, endColorstr=#cccccc);
+}
+
+/* Message flashing */
+.flash {
+    background-color: #FBB0B0;
+    padding: 10px;
+    width: 400px;
+    display: table;
+    margin: auto;
+  }
+
+  .column {
+  float: left;
+  width: 50%;
+  }
+
+  .partialform {
+    text-align: right;
+    margin-right: 70px;
+  }
