@@ -56,10 +56,10 @@ def player_validation(away_players, home_players):
 
     if away_players_selected == 0 and home_players_selected == 0:
         return "Please enter a player on both teams."
-    if home_players_selected == 0:
-        return "Please enter a player on the home team."
-    if away_players_selected == 0:
-        return "Please enter a player on the away team."
+    if home_players_selected < 9:
+        return "Please add more players to the home team."
+    if away_players_selected < 9:
+        return "Please add more players to the away team."
     if away_players_selected != home_players_selected:
         return "Please enter the same number of players on both teams."
     else:
