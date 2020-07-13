@@ -23,8 +23,8 @@ def analyze_train(train_csv_filename, test_csv_filename):
     model = Sequential()
 
     # BEST RESULTS
-    model.add(Dense(32, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
-    model.add(Dropout(0.4))
+    model.add(Dense(16, input_dim=36, activation='relu', kernel_constraint=MaxNorm(3)))
+    model.add(Dropout(0.3))
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -139,5 +139,8 @@ def read_csv_file(filename):
     return data_matrix
 
 
-neural_net = analyze_train("Data/Training_Data.csv", "Data/Testing_Data.csv")
-neural_net.save("NBA_Game_model.h5")
+try:
+    neural_net = analyze_train("Data/Training_Data.csv", "Data/Testing_Data.csv")
+    neural_net.save("NBA_Game_model.h5")
+except KeyboardInterrupt:
+    exit()

@@ -1,5 +1,5 @@
-from flask import Flask, url_for, render_template, redirect, jsonify, request, flash
-from forms import PlayerForm, PlayerSelectionForm
+from flask import Flask, render_template, jsonify, request, flash
+from forms import PlayerSelectionForm
 import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 from tensorflow import keras
@@ -13,44 +13,58 @@ meta = MetaData()
 
 # Table format from database
 players = Table('players', meta,
-    Column('NAME', String),
-    Column('PLAYER_ID', String, primary_key=True),
-    Column('YEAR', String, primary_key=True),
-    Column('AGE', Integer),
-    Column('HEIGHT', Integer),
-    Column('WEIGHT', Integer),
-    Column('MIN', Integer),
-    Column('PTS', Integer),
-    Column('FGM', Integer),
-    Column('FG_PERCENTAGE', Integer),
-    Column('THREE_PM', Integer),
-    Column('THREE_P_PERCENTAGE', Integer),
-    Column('FTM', Integer),
-    Column('FT_PERCENTAGE', Integer),
-    Column('OREB', Integer),
-    Column('DREB', Integer),
-    Column('AST', Integer),
-    Column('TOV', Integer),
-    Column('STL', Integer),
-    Column('BLK', Integer),
-    Column('PF', Integer),
-    Column('PLUS_MINUS', Integer),
-    Column('EFG_PERCENTAGE', Integer),
-    Column('TS_PERCENTAGE', Integer)
-)
+                Column('NAME', String),
+                Column('PLAYER_ID', String, primary_key=True),
+                Column('TEAM', String),
+                Column('TEAM_ID', String),
+                Column('YEAR', String, primary_key=True),
+                Column('AGE', Integer),
+                Column('HEIGHT', Integer),
+                Column('WEIGHT', Integer),
+                Column('MIN', Integer),
+                Column('PTS', Integer),
+                Column('FTM', Integer),
+                Column('FTA', Integer),
+                Column('FT_PCT', Integer),
+                Column('FGM', Integer),
+                Column('FGA', Integer),
+                Column('FG_PCT', Integer),
+                Column('FG3M', Integer),
+                Column('FG3A', Integer),
+                Column('FG3_PCT', Integer),
+                Column('AST', Integer),
+                Column('TOV', Integer),
+                Column('STL', Integer),
+                Column('BLK', Integer),
+                Column('OREB', Integer),
+                Column('DREB', Integer),
+                Column('PF', Integer))
 
 
-# Returns true if at least 5 players were entered into the form for a team
-def player_validation(players):
-    players_selected = 0
-    for player in players:
+# ***ADD IN TEAM CLASS AND FIX GET_STATS AND STATS_MOD***
+
+# Checks if both teams have at least one player and have the same number of players
+def player_validation(away_players, home_players):
+    away_players_selected = 0
+    for player in away_players:
         if player["year"] != "Empty" and player["player_name"] != "Empty":
-            players_selected += 1
+            away_players_selected += 1
 
-    if players_selected < 9:
-        return False
+    home_players_selected = 0
+    for player in home_players:
+        if player["year"] != "Empty" and player["player_name"] != "Empty":
+            home_players_selected += 1
+
+    if away_players_selected == 0 and home_players_selected == 0:
+        return "Please enter a player on both teams."
+    if home_players_selected == 0:
+        return "Please enter a player on the home team."
+    if away_players_selected == 0:
+        return "Please enter a player on the away team."
+    if away_players_selected != home_players_selected:
+        return "Please enter the same number of players on both teams."
     else:
-        return True
+        return "Validated"
 
 
 # Processes information entered into form - returns an array of stats to be analyzed by our model
@@ -94,12 +108,12 @@ def get_stats(home_players, away_players):
     for x in range(num_away_players, 13):
         away_stats.extend(np.zeros(21))
 
-    stats = mod_min_ratio(home_stats, away_stats)
+    stats = stats_mod(home_stats, away_stats)
 
     return np.array(stats)
 
 
-def mod_min_ratio(home_stats, away_stats):
+def stats_mod(home_stats, away_stats):
     edit_stat_indexes = [3, 4, 5, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18]
 
     home_total_min = sum(home_stats[0:273:21])
@@ -132,12 +146,8 @@ def homepage():
         home_players = form.home_players.data
         away_players = form.away_players.data
 
-        if not player_validation(away_players) and not player_validation(home_players):
-            flash("Please enter 9 players on both teams.", "error")
-        elif not player_validation(home_players):
-            flash("Please enter 9 players on the home team.", "error")
-        elif not player_validation(away_players):
-            flash("Please enter 9 players on the away team.", "error")
+        if player_validation(away_players, home_players) is not "Validated":
+            flash(player_validation(away_players, home_players), "error")
         else:
             stats = np.array([get_stats(home_players, away_players)])
             prediction = model.predict(stats)
