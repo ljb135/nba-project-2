@@ -3,6 +3,7 @@ from forms import PlayerSelectionForm
 import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 from tensorflow import keras
+from Data_Collection import Team
 
 # WebApp configuration and file paths
 app = Flask(__name__)
@@ -41,8 +42,6 @@ players = Table('players', meta,
                 Column('PF', Integer))
 
 
-# ***ADD IN TEAM CLASS AND FIX GET_STATS AND STATS_MOD***
-
 # Checks if both teams have at least one player and have the same number of players
 def player_validation(away_players, home_players):
     away_players_selected = 0
@@ -69,7 +68,6 @@ def player_validation(away_players, home_players):
 
 # Processes information entered into form - returns an array of stats to be analyzed by our model
 def get_stats(home_players, away_players):
-    num_home_players = 0
     home_stats = []
     for player in home_players:
         year = player["year"]
@@ -80,15 +78,10 @@ def get_stats(home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
-            del result[0:3]
-            home_stats.extend(result)
+            del result[6:8]
+            del result[:5]
+            home_stats.append(result)
 
-            num_home_players += 1
-
-    for x in range(num_home_players, 13):
-        home_stats.extend(np.zeros(21))
-
-    num_away_players = 0
     away_stats = []
     for player in away_players:
         year = player["year"]
@@ -100,35 +93,46 @@ def get_stats(home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
-            del result[0:3]
-            away_stats.extend(result)
+            del result[6:8]
+            del result[:5]
+            away_stats.append(result)
 
-            num_away_players += 1
-
-    for x in range(num_away_players, 13):
-        away_stats.extend(np.zeros(21))
-
-    stats = stats_mod(home_stats, away_stats)
-
-    return np.array(stats)
+    return np.array(stats_mod(home_stats, away_stats))
 
 
-def stats_mod(home_stats, away_stats):
-    edit_stat_indexes = [3, 4, 5, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18]
+def stats_mod(home_players, away_players):
+    game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
+    edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
 
-    home_total_min = sum(home_stats[0:273:21])
-    home_min_ratio = 5*48/home_total_min
-    for i in range(0, 13):
-        for j in edit_stat_indexes:
-            home_stats[i*21+j] = round(home_stats[i*21+j] * home_min_ratio, 1)
+    home_total_min = 0
+    away_total_min = 0
 
-    away_total_min = sum(away_stats[0:273:21])
-    away_min_ratio = 5*48/away_total_min
-    for i in range(0, 13):
-        for j in edit_stat_indexes:
-            away_stats[i*21+j] = round(away_stats[i*21+j] * away_min_ratio, 1)
+    for player in home_players:
+        home_total_min += player[1]
+    for player in away_players:
+        away_total_min += player[1]
 
-    return home_stats + away_stats
+    if len(home_players) < 5:
+        home_min_ratio = len(home_players)*48/home_total_min
+    else:
+        home_min_ratio = 5*48/home_total_min
+    if len(away_players) < 5:
+        away_min_ratio = len(away_players)*48/away_total_min
+    else:
+        away_min_ratio = 5*48/away_total_min
+
+    # loops through all players on both teams and edits stats using minutes ratio
+    for player_number in range(len(home_players)):
+        for index in edit_stat_indexes:
+            home_players[player_number][index] = home_players[player_number][index] * home_min_ratio
+    for player_number in range(len(away_players)):
+        for index in edit_stat_indexes:
+            away_players[player_number][index] = away_players[player_number][index] * away_min_ratio
+
+    game_data_array.extend(Team(home_players).export())
+    game_data_array.extend(Team(away_players).export())
+
+    return game_data_array
 
 
 # Route for webapp homepage - contains form
@@ -146,7 +150,7 @@ def homepage():
         home_players = form.home_players.data
         away_players = form.away_players.data
 
-        if player_validation(away_players, home_players) is not "Validated":
+        if player_validation(away_players, home_players) != "Validated":
             flash(player_validation(away_players, home_players), "error")
         else:
             stats = np.array([get_stats(home_players, away_players)])
