@@ -86,7 +86,7 @@ class Team:
         self.pts = round(total_pts, 2)
 
         # calculate true shooting percentage
-        self.ts_pct = round(total_pts/(total_fga + (0.44 * total_fta)), 3)
+        self.ts_pct = round(total_pts/(2*(total_fga + (0.44 * total_fta))), 3)
 
         # calculate total free throw attempts
         self.fta = round(total_fta, 2)
@@ -357,11 +357,8 @@ def collect_data(date_range, filename):
         exit()
 
 
-# csv_filename = "Data/13-14_data.csv"
-# start_date = datetime.datetime(2013, 11, 1)
-# end_date = datetime.datetime(2014, 4, 16)
-# csv_filename = "Data/14-15_data.csv"
-# start_date = datetime.datetime(2014, 2, 25)
-# end_date = datetime.datetime(2015, 4, 15)
-# date_list = pd.date_range(start_date, end_date)
-# collect_data(date_list, csv_filename)
+csv_filename = "Data/13-14_data.csv"
+start_date = datetime.datetime(2013, 11, 1)
+end_date = datetime.datetime(2013, 11, 1)
+date_list = pd.date_range(start_date, end_date)
+collect_data(date_list, csv_filename)
