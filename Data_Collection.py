@@ -47,19 +47,14 @@ class Team:
     def __init__(self, players_stats):
         self.players_stats = players_stats
 
-        self.age = None
         self.pts = None
-        self.efg_pct = None
+        self.ts_pct = None
         self.fta = None
         self.ft_pct = None
-        self.ftr = None
-        self.fg2a = None
-        self.fg2_pct = None
         self.fg3a = None
         self.fg3_pct = None
         self.ast = None
         self.tov = None
-        self.ast_tov = None
         self.oreb = None
         self.dreb = None
         self.stl = None
@@ -68,16 +63,14 @@ class Team:
 
         self.__calculate()
 
-    # insert methods for calculating each stat
+    # calculates team stats using the player stats
     def __calculate(self):
 
         sum_stats = np.array(self.players_stats).sum(axis=0)
 
-        total_age = sum_stats[0]
         total_pts = sum_stats[2]
         total_ftm = sum_stats[3]
         total_fta = sum_stats[4]
-        total_fgm = sum_stats[6]
         total_fga = sum_stats[7]
         total_3pm = sum_stats[9]
         total_3pa = sum_stats[10]
@@ -89,29 +82,17 @@ class Team:
         total_dreb = sum_stats[17]
         total_pf = sum_stats[18]
 
-        # calculate average age
-        self.age = round(total_age/len(self.players_stats), 1)
-
         # calculate total points
         self.pts = round(total_pts, 2)
 
-        # calculate effective field goal percentage
-        self.efg_pct = round((total_fgm + (0.5 * total_3pm))/total_fga, 3)
+        # calculate true shooting percentage
+        self.ts_pct = round(total_pts/(total_fga + (0.44 * total_fta)), 3)
 
         # calculate total free throw attempts
         self.fta = round(total_fta, 2)
 
         # calculate free throw percentage
         self.ft_pct = round(total_ftm/total_fta, 3)
-
-        # calculate free throw rate
-        self.ftr = round(total_fta/total_fga, 3)
-
-        # calculate total two point attempts
-        self.fg2a = round(total_fga - total_3pa, 2)
-
-        # calculate two point percentage
-        self.fg2_pct = round((total_fgm - total_3pm)/(total_fga - total_3pa), 3)
 
         # calculate total three point attempts
         self.fg3a = round(total_3pa, 2)
@@ -124,9 +105,6 @@ class Team:
 
         # calculate total turnovers
         self.tov = round(total_tov, 2)
-
-        # calculate assist to turnover ratio
-        self.ast_tov = round(total_ast/total_tov, 3)
 
         # calculate total offensive rebounds
         self.oreb = round(total_oreb, 2)
@@ -144,7 +122,7 @@ class Team:
         self.pf = round(total_pf, 2)
 
     def export(self):
-        return [self.age, self.pts, self.efg_pct, self.fta, self.ft_pct, self.ftr, self.fg2a, self.fg2_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.ast_tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
+        return [self.pts, self.ts_pct, self.fta, self.ft_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
 
 
 # used to store information regarding a single NBA Game
@@ -221,6 +199,15 @@ class NBAGame:
             del player_stats[6:8]
             del player_stats[:5]
             self.away_players.append(player_stats)
+
+        # filter home and away players to the eight with the most minutes
+        self.home_players.sort(key=lambda x: x[1])
+        del self.home_players[8:]
+        print(self.home_players)
+
+        self.away_players.sort(key=lambda x: x[1])
+        del self.away_players[8:]
+        print(self.away_players)
 
     # compares scores and determines which team won
     def __set_result(self):
