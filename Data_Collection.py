@@ -201,13 +201,10 @@ class NBAGame:
             self.away_players.append(player_stats)
 
         # filter home and away players to the eight with the most minutes
-        self.home_players.sort(key=lambda x: x[1])
+        self.home_players.sort(key=lambda x: x[1], reverse=True)
         del self.home_players[8:]
-        print(self.home_players)
-
-        self.away_players.sort(key=lambda x: x[1])
+        self.away_players.sort(key=lambda x: x[1], reverse=True)
         del self.away_players[8:]
-        print(self.away_players)
 
     # compares scores and determines which team won
     def __set_result(self):
@@ -357,8 +354,8 @@ def collect_data(date_range, filename):
         exit()
 
 
-csv_filename = "Data/13-14_data.csv"
-start_date = datetime.datetime(2013, 11, 1)
-end_date = datetime.datetime(2013, 11, 1)
+csv_filename = "Data/17-18.csv"
+start_date = datetime.datetime(2017, 10, 17)
+end_date = datetime.datetime(2018, 6, 17)
 date_list = pd.date_range(start_date, end_date)
 collect_data(date_list, csv_filename)
