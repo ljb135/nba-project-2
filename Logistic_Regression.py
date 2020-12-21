@@ -1,7 +1,8 @@
 import pandas as pd
+import numpy as np
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from decimal import Decimal
 # import matplotlib.pyplot as plt
 
@@ -11,9 +12,26 @@ def make_model(data):
     X = data.drop(['game_id', 'result'], axis=1)
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=True)
 
-    model = LogisticRegression(max_iter=250)
-
+    model = LogisticRegression(max_iter=250, penalty='l2', C=59.94842503189409)
     model.fit(x_train, y_train)
+
+    # # Create regularization penalty space
+    # penalty = ['none', 'l2']
+    #
+    # # Create regularization hyperparameter space
+    # C = np.logspace(0, 4, 10)
+    #
+    # solver = ['newton-cg', 'lbfgs', 'sag', 'saga']
+    #
+    # # Create hyperparameter options
+    # hyperparameters = dict(C=C, penalty=penalty, solver=solver)
+    #
+    # clf = GridSearchCV(model, hyperparameters, cv=5, verbose=0, return_train_score=True, n_jobs=-1)
+    # best_model = clf.fit(X, y)
+    #
+    # print('Best Penalty:', best_model.best_estimator_.get_params()['penalty'])
+    # print('Best C:', best_model.best_estimator_.get_params()['C'])
+
     y_pred = pd.Series(model.predict(x_test))
     y_test = y_test.reset_index(drop=True)
     z = pd.concat([y_test, y_pred], axis=1)
