@@ -1,7 +1,7 @@
 {%  extends "layout.html" %}
 
 {% block error %}
-<div class="container2" id="error_message">
+<div class="errorContainer" id="error_message">
   {% with messages = get_flashed_messages(category_filter=["error"]) %}
     {% if messages %}
       {% for message in messages %}
@@ -13,7 +13,7 @@
 {% endblock error %}
 
 {% block content %}
-<div class = "subheading">
+<div class="subheading">
   <h2>
     Enter the 8 players on the home team and the away team.
   </h2>
@@ -25,38 +25,44 @@
 
   <div class="form">
 
-    {{ form.season }}
-
-    <div class="column">
-      <h5><u><b>Home Team</b></u></h5>
-
-      <div class = "partialform">
-        {% for home_player in form.home_players %}
-        <h3><b>{{ loop.index }}.</b> {{ home_player.player }}</h3>
-        {% endfor %}
-      </div>
-
-      <div class="buttons">
-        <button id="clear_home_team_button">Clear Home Team</button>
-      </div>
+    <div class="seasonContainer">
+      <h4>Season: </h4> {{ form.season }}
     </div>
 
-    <div class="column">
-      <h5><u><b>Away Team</b></u></h5>
+    <div class="formRow">
+      <div class="column left">
+        <h5><u><b>Home Team</b></u></h5>
 
-      <div class = "partialform">
-        {% for away_player in form.away_players %}
-        <h3><b>{{ loop.index }}.</b> {{ away_player.player }}</h3>
-        {% endfor %}
+        <div class="partialform">
+          {% for home_player in form.home_players %}
+          <h3><b>{{ loop.index }}.</b> {{ home_player.player }}</h3>
+          {% endfor %}
+        </div>
+
+        <div class="buttons">
+          <button id="clear_home_team_button">Clear Home Team</button>
+        </div>
       </div>
 
-      <div class="buttons">
-        <button id="clear_away_team_button">Clear Away Team</button>
+      <div class="column middle">
+        <div class="buttons">
+          <button id="swap_teams_button">Swap Teams</button>
+        </div>
       </div>
-    </div>
 
-    <div class="buttons">
-      <button id="swap_teams_button">Swap Teams</button>
+      <div class="column right">
+        <h5><u><b>Away Team</b></u></h5>
+
+        <div class="partialform">
+          {% for away_player in form.away_players %}
+          <h3><b>{{ loop.index }}.</b> {{ away_player.player }}</h3>
+          {% endfor %}
+        </div>
+
+        <div class="buttons">
+          <button id="clear_away_team_button">Clear Away Team</button>
+        </div>
+      </div>
     </div>
 
     <div class="buttons" id="submit_button">
@@ -71,7 +77,7 @@
 
 </form>
 
-<div class="container3" id="prediction">
+<div class="predictionContainer3" id="prediction">
   {% with messages = get_flashed_messages(category_filter=["success"]) %}
     {% if messages %}
       {% for message in messages %}

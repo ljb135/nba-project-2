@@ -130,10 +130,10 @@ def homepage():
     form = PlayerSelectionForm()
 
     player_choices = [("Empty", "Empty")]
-    for player in form.home_players:
-        player.player_name.choices = player_choices
-    for player in form.away_players:
-        player.player_name.choices = player_choices
+    for home_player in form.home_players:
+        home_player.player.choices = player_choices
+    for away_player in form.away_players:
+        away_player.player.choices = player_choices
 
     if request.method == "POST":
         home_players = form.home_players.data
