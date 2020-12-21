@@ -45,13 +45,13 @@ players = Table('players', meta,
 # Checks if both teams have at least one player and have the same number of players
 def player_validation(away_players, home_players):
     away_players_selected = 0
-    for player in away_players:
-        if player["player_name"] != "Empty":
+    for away_player in away_players:
+        if away_player["player"] != "Empty":
             away_players_selected += 1
 
     home_players_selected = 0
-    for player in home_players:
-        if player["player_name"] != "Empty":
+    for home_player in home_players:
+        if home_player["player"] != "Empty":
             home_players_selected += 1
 
     if away_players_selected < 8 and home_players_selected < 8:
