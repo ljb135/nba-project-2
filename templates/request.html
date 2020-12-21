@@ -15,11 +15,7 @@
 {% block content %}
 <div class = "subheading">
   <h2>
-    Enter the players on the home team and the away team.
-    <br>
-    9 players for each team are required - you may enter up to 13.
-    <br>
-    Please enter the same number of players for both teams.
+    Enter the 8 players on the home team and the away team.
   </h2>
 </div>
 
@@ -28,16 +24,15 @@
   {{ form.hidden_tag() }}
 
   <div class="form">
-    <div class="buttons">
-      <button id="swap_teams_button">Swap Teams</button>
-    </div>
+
+    {{ form.season }}
 
     <div class="column">
       <h5><u><b>Home Team</b></u></h5>
 
       <div class = "partialform">
-        {% for player in form.home_players %}
-        <h3><b>{{ loop.index }}.</b> {{ player.year }} {{ player.player_name }}</h3>
+        {% for home_player in form.home_players %}
+        <h3><b>{{ loop.index }}.</b> {{ home_player.player }}</h3>
         {% endfor %}
       </div>
 
@@ -50,14 +45,18 @@
       <h5><u><b>Away Team</b></u></h5>
 
       <div class = "partialform">
-        {% for player in form.away_players %}
-        <h3><b>{{ loop.index }}.</b> {{ player.year }} {{ player.player_name }}</h3>
+        {% for away_player in form.away_players %}
+        <h3><b>{{ loop.index }}.</b> {{ away_player.player }}</h3>
         {% endfor %}
       </div>
 
       <div class="buttons">
         <button id="clear_away_team_button">Clear Away Team</button>
       </div>
+    </div>
+
+    <div class="buttons">
+      <button id="swap_teams_button">Swap Teams</button>
     </div>
 
     <div class="buttons" id="submit_button">

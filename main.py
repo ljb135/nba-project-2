@@ -46,22 +46,20 @@ players = Table('players', meta,
 def player_validation(away_players, home_players):
     away_players_selected = 0
     for player in away_players:
-        if player["year"] != "Empty" and player["player_name"] != "Empty":
+        if player["player_name"] != "Empty":
             away_players_selected += 1
 
     home_players_selected = 0
     for player in home_players:
-        if player["year"] != "Empty" and player["player_name"] != "Empty":
+        if player["player_name"] != "Empty":
             home_players_selected += 1
 
-    if away_players_selected == 0 and home_players_selected == 0:
-        return "Please enter a player on both teams."
-    if home_players_selected < 9:
+    if away_players_selected < 8 and home_players_selected < 8:
+        return "Please enter eight players on both teams."
+    if home_players_selected < 8:
         return "Please add more players to the home team."
-    if away_players_selected < 9:
+    if away_players_selected < 8:
         return "Please add more players to the away team."
-    if away_players_selected != home_players_selected:
-        return "Please enter the same number of players on both teams."
     else:
         return "Validated"
 
@@ -70,10 +68,9 @@ def player_validation(away_players, home_players):
 def get_stats(home_players, away_players):
     home_stats = []
     for player in home_players:
-        year = player["year"]
         player_id = player["player_name"]
-        if year != "Empty" and player_id != "Empty":
-            query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
+        if player_id != "Empty":
+            query = select([players]).where(and_(players.c.YEAR == "2019", players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
 
@@ -84,11 +81,9 @@ def get_stats(home_players, away_players):
 
     away_stats = []
     for player in away_players:
-        year = player["year"]
         player_id = player["player_name"]
-        if year != "Empty" and player_id != "Empty":
-            print("RUN")
-            query = select([players]).where(and_(players.c.YEAR == year, players.c.PLAYER_ID == player_id))
+        if player_id != "Empty":
+            query = select([players]).where(and_(players.c.YEAR == "2019", players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
 
@@ -112,14 +107,8 @@ def stats_mod(home_players, away_players):
     for player in away_players:
         away_total_min += player[1]
 
-    if len(home_players) < 5:
-        home_min_ratio = len(home_players)*48/home_total_min
-    else:
-        home_min_ratio = 5*48/home_total_min
-    if len(away_players) < 5:
-        away_min_ratio = len(away_players)*48/away_total_min
-    else:
-        away_min_ratio = 5*48/away_total_min
+    home_min_ratio = 5*48/home_total_min
+    away_min_ratio = 5*48/away_total_min
 
     # loops through all players on both teams and edits stats using minutes ratio
     for player_number in range(len(home_players)):
