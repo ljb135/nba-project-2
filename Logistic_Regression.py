@@ -12,19 +12,17 @@ def make_model(data):
     X = data.drop(['game_id', 'result'], axis=1)
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=True)
 
-    model = LogisticRegression(max_iter=250, penalty='l2', C=59.94842503189409)
+    model = LogisticRegression(max_iter=2500, penalty='l2', C=0.615848211066026)
     model.fit(x_train, y_train)
 
     # # Create regularization penalty space
-    # penalty = ['none', 'l2']
+    # penalty = ['none', 'l1', 'l2']
     #
     # # Create regularization hyperparameter space
-    # C = np.logspace(0, 4, 10)
-    #
-    # solver = ['newton-cg', 'lbfgs', 'sag', 'saga']
+    # C = np.logspace(-4, 4, 20)
     #
     # # Create hyperparameter options
-    # hyperparameters = dict(C=C, penalty=penalty, solver=solver)
+    # hyperparameters = dict(C=C, penalty=penalty)
     #
     # clf = GridSearchCV(model, hyperparameters, cv=5, verbose=0, return_train_score=True, n_jobs=-1)
     # best_model = clf.fit(X, y)
@@ -68,5 +66,5 @@ def make_model(data):
 training_data = pd.read_csv("Data/training_data.csv")
 training_data.columns = ["game_id", "result", "home_pts", "home_ts_pct", "home_fta", "home_ft_pct", "home_fg3a", "home_fg3_pct", "home_ast", "home_tov", "home_oreb", "home_dreb", "home_stl", "home_blk", "home_pf", "away_pts", "away_ts_pct", "away_fta", "away_ft_pct", "away_fg3a", "away_fg3_pct", "away_ast", "away_tov", "away_oreb", "away_dreb", "away_stl", "away_blk", "away_pf"]
 make_model(training_data)
-# # Use (model.predict_proba(arr)[0][1]) to find the proy for a single game
+# Use (model.predict_proba(arr)[0][1]) to find the proy for a single game
 
