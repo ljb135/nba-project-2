@@ -2,15 +2,17 @@ from flask import Flask, render_template, jsonify, request, flash
 from forms import PlayerSelectionForm
 import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
-from tensorflow import keras
 from Data_Collection import Team
+import pickle
 
 # WebApp configuration and file paths
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
-model = keras.models.load_model('NBA_Game_model.h5')
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
+Pkl_Filename = "NBA_LRModel.pkl"
+with open(Pkl_Filename, 'rb') as file:
+    model = pickle.load(file)
 
 # Table format from database
 players = Table('v_players', meta,
@@ -76,6 +78,7 @@ def get_stats(season, home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
+            del result[26]
             del result[6:8]
             del result[:5]
             home_stats.append(result)
@@ -89,6 +92,7 @@ def get_stats(season, home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
+            del result[26]
             del result[6:8]
             del result[:5]
             away_stats.append(result)
@@ -145,8 +149,8 @@ def homepage():
             flash(player_validation(away_players, home_players), "error")
         else:
             stats = np.array([get_stats(season, home_players, away_players)])
-            prediction = model.predict(stats)
-            message = "The probability that the home team wins is " + str((prediction[0][0] * 100).round(1)) + "%"
+            prediction = model.predict_proba(stats)
+            message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
             flash(message, "success")
 
     return render_template('request.html', form=form, title='Home')

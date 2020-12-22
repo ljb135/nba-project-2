@@ -13,7 +13,7 @@ db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
 conn = db.connect()
 
-players = Table('players', meta,
+players = Table('v_players', meta,
                 Column('NAME', String),
                 Column('PLAYER_ID', String, primary_key=True),
                 Column('TEAM', String),
@@ -39,7 +39,8 @@ players = Table('players', meta,
                 Column('BLK', Integer),
                 Column('OREB', Integer),
                 Column('DREB', Integer),
-                Column('PF', Integer))
+                Column('PF', Integer),
+                Column('TEAM_NAME', String))
 
 
 # converts a list of players stats into team stats
