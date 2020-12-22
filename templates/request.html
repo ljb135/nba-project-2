@@ -109,9 +109,9 @@ function delete_containers(){
         prediction_container.innerHTML = "";
     }
 }
-function clear_team(team){
+function clear_team(season, team){
     let team_field = document.getElementById(team + "_team");
-    update_teamHTML("Empty", "Empty", team_field);
+    update_teamHTML(season, "Empty", team_field);
     for (let i = 0; i < 8; i++){
         let team_player_field_name = team + "_players-" + i + "-player";
         let team_player_field = document.getElementById(team_player_field_name);
@@ -257,9 +257,16 @@ function team_update(){
     };
 }
 function playerfield_update(home_player_field_name, away_player_field_name){
+    let season_field = document.getElementById("season");
+
     let home_player_field = document.getElementById(home_player_field_name);
     home_player_field.onchange = function(){
         delete_containers();
+
+        let season = season_field.value;
+        let home_team_field_name = "home_team";
+        let home_team_field = document.getElementById("home_team");
+        update_teamHTML(season, "Empty", home_team_field);
 
         let selected_player = home_player_field.value;
         sessionStorage.setItem(home_player_field_name, selected_player);
@@ -268,6 +275,11 @@ function playerfield_update(home_player_field_name, away_player_field_name){
     let away_player_field = document.getElementById(away_player_field_name);
     away_player_field.onchange = function(){
         delete_containers();
+
+        let season = season_field.value;
+        let away_team_field_name = "away_team";
+        let away_team_field = document.getElementById("away_team");
+        update_teamHTML(season, "Empty", away_team_field);
 
         let selected_player = away_player_field.value;
         sessionStorage.setItem(away_player_field_name, selected_player);
@@ -396,15 +408,21 @@ function clear_team_button(){
     document.addEventListener("DOMContentLoaded", function(){
         let clear_home_team_button = document.getElementById("clear_home_team_button");
         let clear_away_team_button = document.getElementById("clear_away_team_button");
+        let season_field = document.getElementById("season");
+
         clear_home_team_button.addEventListener("click", function(event){
             event.preventDefault();
             delete_containers();
-            clear_team("home");
+
+            let season = season_field.value;
+            clear_team(season, "home");
         });
         clear_away_team_button.addEventListener("click", function(event){
             event.preventDefault();
             delete_containers();
-            clear_team("away");
+
+            let season = season_field.value;
+            clear_team(season, "away");
         });
     });
 }
