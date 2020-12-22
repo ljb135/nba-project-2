@@ -15,7 +15,10 @@
 {% block content %}
 <div class="subheading">
   <h2>
-    Enter the 8 players on the home team and the away team.
+    Enter 8 players on the home team and the away team.
+    <br>
+    <br>
+    Use the Autofill dropdown to automatically fill in the 8 players that averaged the most minutes for the team that season (minimum 5 games played).
   </h2>
 </div>
 
@@ -112,6 +115,7 @@ function delete_containers(){
 function clear_team(season, team){
     let team_field = document.getElementById(team + "_team");
     update_teamHTML(season, "Empty", team_field);
+    sessionStorage.setItem(team + "_team", "Empty");
     for (let i = 0; i < 8; i++){
         let team_player_field_name = team + "_players-" + i + "-player";
         let team_player_field = document.getElementById(team_player_field_name);
@@ -267,6 +271,7 @@ function playerfield_update(home_player_field_name, away_player_field_name){
         let home_team_field_name = "home_team";
         let home_team_field = document.getElementById("home_team");
         update_teamHTML(season, "Empty", home_team_field);
+        sessionStorage.setItem(home_team_field_name, "Empty");
 
         let selected_player = home_player_field.value;
         sessionStorage.setItem(home_player_field_name, selected_player);
@@ -280,6 +285,7 @@ function playerfield_update(home_player_field_name, away_player_field_name){
         let away_team_field_name = "away_team";
         let away_team_field = document.getElementById("away_team");
         update_teamHTML(season, "Empty", away_team_field);
+        sessionStorage.setItem(away_team_field_name, "Empty");
 
         let selected_player = away_player_field.value;
         sessionStorage.setItem(away_player_field_name, selected_player);

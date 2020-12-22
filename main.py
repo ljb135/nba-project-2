@@ -13,7 +13,7 @@ db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 meta = MetaData()
 
 # Table format from database
-players = Table('players', meta,
+players = Table('v_players', meta,
                 Column('NAME', String),
                 Column('PLAYER_ID', String, primary_key=True),
                 Column('TEAM', String),
@@ -39,7 +39,8 @@ players = Table('players', meta,
                 Column('BLK', Integer),
                 Column('OREB', Integer),
                 Column('DREB', Integer),
-                Column('PF', Integer))
+                Column('PF', Integer),
+                Column('TEAM_NAME', String))
 
 
 # Checks if both teams have at least one player and have the same number of players
@@ -154,7 +155,7 @@ def homepage():
 # Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
-    query = select([players.c.PLAYER_ID, players.c.NAME]).where(players.c.YEAR == year)
+    query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(players.c.YEAR == year)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -162,7 +163,7 @@ def playerlist(year):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME
+        playerObj["name"] = player.NAME + ", " + player.TEAM
         playerObj["player_id"] = player.PLAYER_ID
         player_array.append(playerObj)
 
@@ -172,7 +173,7 @@ def playerlist(year):
 # Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/autofill/<year>/<team_id>')
 def autofill(year, team_id):
-    query = select([players.c.PLAYER_ID, players.c.NAME]).where(and_(players.c.YEAR == year, players.c.TEAM_ID == team_id)).order_by(players.c.MIN.desc()).limit(8)
+    query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(and_(players.c.YEAR == year, players.c.TEAM_ID == team_id)).order_by(players.c.MIN.desc()).limit(8)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -180,7 +181,7 @@ def autofill(year, team_id):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME
+        playerObj["name"] = player.NAME + ", " + player.TEAM
         playerObj["player_id"] = player.PLAYER_ID
         player_array.append(playerObj)
 
@@ -190,7 +191,7 @@ def autofill(year, team_id):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players.c.TEAM_ID, players.c.TEAM]).where(players.c.YEAR == year).distinct()
+    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct()
     conn = db.connect()
     result = conn.execute(query)
 
@@ -198,7 +199,7 @@ def teamlist(year):
 
     for team in result:
         teamObj = {}
-        teamObj["name"] = team.TEAM
+        teamObj["name"] = team.TEAM_NAME
         teamObj["team_id"] = team.TEAM_ID
         team_array.append(teamObj)
 
