@@ -18,7 +18,7 @@
     Enter 8 players on the home team and the away team.
     <br>
     <br>
-    Use the Autofill dropdown to automatically fill in the 8 players that averaged the most minutes for the team that season (minimum 5 games played).
+    Use the Autofill dropdown to automatically fill in the 8 players that averaged the most minutes that season (minimum 5 games played).
   </h2>
 </div>
 
@@ -114,18 +114,18 @@ function delete_containers(){
 }
 function clear_team(season, team){
     let team_field = document.getElementById(team + "_team");
-    update_teamHTML(season, "Empty", team_field);
-    sessionStorage.setItem(team + "_team", "Empty");
+    update_teamHTML(season, "Select", team_field);
+    sessionStorage.setItem(team + "_team", "Select");
     for (let i = 0; i < 8; i++){
         let team_player_field_name = team + "_players-" + i + "-player";
         let team_player_field = document.getElementById(team_player_field_name);
 
-        update_playerHTML("Empty", "Empty", team_player_field);
-        sessionStorage.setItem(team_player_field_name, "Empty");
+        update_playerHTML("Select", "Select", team_player_field);
+        sessionStorage.setItem(team_player_field_name, "Select");
     }
 }
 function update_seasonHTML(selected_season, season_field){
-    let season_optionHTML = "<option value=Empty>Empty</option>";
+    let season_optionHTML = "<option value=Select>Select</option>";
     for (let i = 2015; i < 2020; i++){
         if (i.toString() == selected_season){
             season_optionHTML += "<option value=" + i.toString() + " selected>" + i.toString() + "-" + (i + 1).toString() + "</option>";
@@ -137,14 +137,14 @@ function update_seasonHTML(selected_season, season_field){
     season_field.innerHTML = season_optionHTML;
 }
 function update_playerHTML(selected_season, selected_player, player_field){
-    if (selected_season == "Empty"){
-        let player_optionHTML = "<option value=Empty>Empty</option>";
+    if (selected_season == "Select"){
+        let player_optionHTML = "<option value=Select>Select</option>";
         player_field.innerHTML = player_optionHTML;
     }
     else{
         fetch("/playerlist/" + selected_season).then(function(response){
             response.json().then(function(data){
-                let player_optionHTML = "<option value=Empty>Empty</option>";
+                let player_optionHTML = "<option value=Select>Select</option>";
                 for(let player of data.players){
                     if (player.player_id.toString() == selected_player){
                         player_optionHTML += "<option value=" + player.player_id.toString() + " selected>" + player.name.toString() + "</option>";
@@ -159,14 +159,14 @@ function update_playerHTML(selected_season, selected_player, player_field){
     }
 }
 function update_teamHTML(selected_season, selected_team, team_field){
-    if (selected_season == "Empty"){
-        let team_optionHTML = "<option value=Empty>Empty</option>";
+    if (selected_season == "Select"){
+        let team_optionHTML = "<option value=Select>Select</option>";
         team_field.innerHTML = team_optionHTML;
     }
     else{
         fetch("/teamlist/" + selected_season).then(function(response){
             response.json().then(function(data){
-                let team_optionHTML = "<option value=Empty>Empty</option>";
+                let team_optionHTML = "<option value=Select>Select</option>";
                 for(let team of data.teams){
                     if (team.team_id.toString() == selected_team){
                         team_optionHTML += "<option value=" + team.team_id.toString() + " selected>" + team.name.toString() + "</option>";
@@ -191,8 +191,8 @@ function playerlist_update(){
         let selected_season = season_field.value;
         sessionStorage.setItem("season", selected_season);
 
-        update_teamHTML(selected_season, "Empty", away_team_field);
-        update_teamHTML(selected_season, "Empty", home_team_field);
+        update_teamHTML(selected_season, "Select", away_team_field);
+        update_teamHTML(selected_season, "Select", home_team_field);
 
         for (let i = 0; i < 8; i++){
             let home_player_field_name = "home_players-" + i + "-player";
@@ -201,8 +201,8 @@ function playerlist_update(){
             let home_player_field = document.getElementById(home_player_field_name);
             let away_player_field = document.getElementById(away_player_field_name);
 
-            update_playerHTML(selected_season, "Empty", home_player_field);
-            update_playerHTML(selected_season, "Empty", away_player_field);
+            update_playerHTML(selected_season, "Select", home_player_field);
+            update_playerHTML(selected_season, "Select", away_player_field);
         }
     };
 }
@@ -270,8 +270,8 @@ function playerfield_update(home_player_field_name, away_player_field_name){
         let season = season_field.value;
         let home_team_field_name = "home_team";
         let home_team_field = document.getElementById("home_team");
-        update_teamHTML(season, "Empty", home_team_field);
-        sessionStorage.setItem(home_team_field_name, "Empty");
+        update_teamHTML(season, "Select", home_team_field);
+        sessionStorage.setItem(home_team_field_name, "Select");
 
         let selected_player = home_player_field.value;
         sessionStorage.setItem(home_player_field_name, selected_player);
@@ -284,8 +284,8 @@ function playerfield_update(home_player_field_name, away_player_field_name){
         let season = season_field.value;
         let away_team_field_name = "away_team";
         let away_team_field = document.getElementById("away_team");
-        update_teamHTML(season, "Empty", away_team_field);
-        sessionStorage.setItem(away_team_field_name, "Empty");
+        update_teamHTML(season, "Select", away_team_field);
+        sessionStorage.setItem(away_team_field_name, "Select");
 
         let selected_player = away_player_field.value;
         sessionStorage.setItem(away_player_field_name, selected_player);
@@ -305,13 +305,13 @@ function page_reload(){
             let load_season = sessionStorage.getItem(season_field_name);
             update_seasonHTML(load_season, season_field);
 
-            let load_home_team = "Empty";
+            let load_home_team = "Select";
             if (sessionStorage[home_team_field_name]){
                 load_home_team = sessionStorage.getItem(home_team_field_name);
             }
             update_teamHTML(load_season, load_home_team, home_team_field);
 
-            let load_away_team = "Empty";
+            let load_away_team = "Select";
             if (sessionStorage[away_team_field_name]){
                 load_away_team = sessionStorage.getItem(away_team_field_name);
             }
@@ -324,13 +324,13 @@ function page_reload(){
                 let home_player_field = document.getElementById(home_player_field_name);
                 let away_player_field = document.getElementById(away_player_field_name);
 
-                let load_home_player = "Empty";
+                let load_home_player = "Select";
                 if (sessionStorage[home_player_field_name]){
                     load_home_player = sessionStorage.getItem(home_player_field_name);
                 }
                 update_playerHTML(load_season, load_home_player, home_player_field);
 
-                let load_away_player = "Empty";
+                let load_away_player = "Select";
                 if (sessionStorage[away_player_field_name]){
                     load_away_player = sessionStorage.getItem(away_player_field_name);
                 }
@@ -362,8 +362,8 @@ function swap_teams_button(){
 
             let season = season_field.value;
 
-            let load_home_team = "Empty";
-            let load_away_team = "Empty";
+            let load_home_team = "Select";
+            let load_away_team = "Select";
 
             if (sessionStorage[home_team_field_name]){
                 load_away_team = sessionStorage.getItem(home_team_field_name);
@@ -385,8 +385,8 @@ function swap_teams_button(){
                 let home_player_field = document.getElementById(home_player_field_name);
                 let away_player_field = document.getElementById(away_player_field_name);
 
-                let load_away_player = "Empty";
-                let load_home_player = "Empty";
+                let load_away_player = "Select";
+                let load_home_player = "Select";
 
                 if (sessionStorage[home_player_field_name]){
                     load_away_player = sessionStorage.getItem(home_player_field_name);

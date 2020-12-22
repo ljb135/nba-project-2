@@ -10,7 +10,7 @@ class PlayerForm(Form):
 
 # User entry form for entering players on home/away teams
 class PlayerSelectionForm(FlaskForm):
-    year_options = [("Empty", "Empty")]
+    year_options = [("Select", "Select")]
     for i in range(2015, 2020):
         year_options.append((str(i), f"{i}-{i + 1}"))
 

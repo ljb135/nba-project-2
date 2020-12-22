@@ -9,7 +9,7 @@ from Data_Collection import Team
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
 model = keras.models.load_model('NBA_Game_model.h5')
-db = create_engine('sqlite:///NBAPlayers.db', echo=True)
+db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
 
 # Table format from database
@@ -47,12 +47,12 @@ players = Table('v_players', meta,
 def player_validation(away_players, home_players):
     away_players_selected = 0
     for away_player in away_players:
-        if away_player["player"] != "Empty":
+        if away_player["player"] != "Select":
             away_players_selected += 1
 
     home_players_selected = 0
     for home_player in home_players:
-        if home_player["player"] != "Empty":
+        if home_player["player"] != "Select":
             home_players_selected += 1
 
     if away_players_selected < 8 and home_players_selected < 8:
@@ -70,7 +70,7 @@ def get_stats(season, home_players, away_players):
     home_stats = []
     for player in home_players:
         player_id = player["player"]
-        if player_id != "Empty":
+        if player_id != "Select":
             query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
@@ -83,7 +83,7 @@ def get_stats(season, home_players, away_players):
     away_stats = []
     for player in away_players:
         player_id = player["player"]
-        if player_id != "Empty":
+        if player_id != "Select":
             query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
@@ -130,7 +130,7 @@ def stats_mod(home_players, away_players):
 def homepage():
     form = PlayerSelectionForm()
 
-    player_choices = [("Empty", "Empty")]
+    player_choices = [("Select", "Select")]
     for home_player in form.home_players:
         home_player.player.choices = player_choices
     for away_player in form.away_players:
