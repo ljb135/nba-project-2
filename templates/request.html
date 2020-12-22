@@ -34,7 +34,7 @@
         <h5><u><b>Home Team</b></u></h5>
 
         <div class="partialform">
-          <h3><b>Autofill Roster: </b>{{ form.home_autofill }} </h3>
+          <h3><b>Autofill Roster: </b>{{ form.home_team }} </h3>
         </div>
 
         <div class="partialform">
@@ -60,7 +60,7 @@
         <h5><u><b>Away Team</b></u></h5>
 
         <div class="partialform">
-          <h3><b>Autofill Roster: </b>{{ form.away_autofill }} </h3>
+          <h3><b>Autofill Roster: </b>{{ form.away_team }} </h3>
         </div>
 
         <div class="partialform">
@@ -110,6 +110,8 @@ function delete_containers(){
     }
 }
 function clear_team(team){
+    let team_field = document.getElementById(team + "_team");
+    update_teamHTML("Empty", "Empty", team_field);
     for (let i = 0; i < 8; i++){
         let team_player_field_name = team + "_players-" + i + "-player";
         let team_player_field = document.getElementById(team_player_field_name);
@@ -136,7 +138,7 @@ function update_playerHTML(selected_season, selected_player, player_field){
         player_field.innerHTML = player_optionHTML;
     }
     else{
-        fetch("/update/" + selected_season).then(function(response){
+        fetch("/playerlist/" + selected_season).then(function(response){
             response.json().then(function(data){
                 let player_optionHTML = "<option value=Empty>Empty</option>";
                 for(let player of data.players){
@@ -152,15 +154,41 @@ function update_playerHTML(selected_season, selected_player, player_field){
         });
     }
 }
+function update_teamHTML(selected_season, selected_team, team_field){
+    if (selected_season == "Empty"){
+        let team_optionHTML = "<option value=Empty>Empty</option>";
+        team_field.innerHTML = team_optionHTML;
+    }
+    else{
+        fetch("/teamlist/" + selected_season).then(function(response){
+            response.json().then(function(data){
+                let team_optionHTML = "<option value=Empty>Empty</option>";
+                for(let team of data.teams){
+                    if (team.team_id.toString() == selected_team){
+                        team_optionHTML += "<option value=" + team.team_id.toString() + " selected>" + team.name.toString() + "</option>";
+                    }
+                    else{
+                        team_optionHTML += "<option value=" + team.team_id.toString() + ">" + team.name.toString() + "</option>";
+                    }
+                }
+                team_field.innerHTML = team_optionHTML;
+            });
+        });
+    }
+}
 function playerlist_update(){
-    let season_field_name = "season";
-    let season_field = document.getElementById(season_field_name);
+    let season_field = document.getElementById("season");
+    let away_team_field = document.getElementById("away_team");
+    let home_team_field = document.getElementById("home_team");
 
     season_field.onchange = function(){
         delete_containers();
 
         let selected_season = season_field.value;
-        sessionStorage.setItem(season_field_name, selected_season);
+        sessionStorage.setItem("season", selected_season);
+
+        update_teamHTML(selected_season, "Empty", away_team_field);
+        update_teamHTML(selected_season, "Empty", home_team_field);
 
         for (let i = 0; i < 8; i++){
             let home_player_field_name = "home_players-" + i + "-player";
@@ -172,6 +200,60 @@ function playerlist_update(){
             update_playerHTML(selected_season, "Empty", home_player_field);
             update_playerHTML(selected_season, "Empty", away_player_field);
         }
+    };
+}
+function team_update(){
+    let away_team_field_name = "away_team";
+    let home_team_field_name = "home_team";
+    let away_team_field = document.getElementById("away_team");
+    let home_team_field = document.getElementById("home_team");
+    let season_field = document.getElementById("season");
+
+    away_team_field.onchange = function(){
+        delete_containers();
+
+        let selected_team = away_team_field.value;
+        sessionStorage.setItem(away_team_field_name, selected_team);
+
+        let selected_season = season_field.value;
+
+        fetch("/autofill/" + selected_season + "/" + selected_team).then(function(response){
+            response.json().then(function(data){
+
+                for (let i = 0; i < 8; i++){
+                    let away_player_field_name = "away_players-" + i + "-player";
+                    let away_player_field = document.getElementById(away_player_field_name);
+
+                    let autofill_player = data.players[i].player_id;
+
+                    update_playerHTML(selected_season, autofill_player, away_player_field);
+                    sessionStorage.setItem(away_player_field_name, autofill_player);
+                }
+            });
+        });
+    };
+    home_team_field.onchange = function(){
+        delete_containers();
+
+        let selected_team = home_team_field.value;
+        sessionStorage.setItem(home_team_field_name, selected_team);
+
+        let selected_season = season_field.value;
+
+        fetch("/autofill/" + selected_season + "/" + selected_team).then(function(response){
+            response.json().then(function(data){
+
+                for (let i = 0; i < 8; i++){
+                    let home_player_field_name = "home_players-" + i + "-player";
+                    let home_player_field = document.getElementById(home_player_field_name);
+
+                    let autofill_player = data.players[i].player_id;
+
+                    update_playerHTML(selected_season, autofill_player, home_player_field);
+                    sessionStorage.setItem(home_player_field_name, autofill_player);
+                }
+            });
+        });
     };
 }
 function playerfield_update(home_player_field_name, away_player_field_name){
@@ -191,26 +273,51 @@ function playerfield_update(home_player_field_name, away_player_field_name){
         sessionStorage.setItem(away_player_field_name, selected_player);
     };
 }
-function page_reload(season_field_name, home_player_field_name, away_player_field_name){
-    let season_field = document.getElementById(season_field_name);
-    let home_player_field = document.getElementById(home_player_field_name);
-    let away_player_field = document.getElementById(away_player_field_name);
+function page_reload(){
     window.addEventListener("load", function(){
+        let season_field_name = "season";
+        let away_team_field_name = "away_team";
+        let home_team_field_name = "home_team";
+
+        let season_field = document.getElementById(season_field_name);
+        let home_team_field = document.getElementById(home_team_field_name);
+        let away_team_field = document.getElementById(away_team_field_name);
+
         if (sessionStorage[season_field_name]){
             let load_season = sessionStorage.getItem(season_field_name);
             update_seasonHTML(load_season, season_field);
 
-            let load_home_player = "Empty";
-            if (sessionStorage[home_player_field_name]){
-                load_home_player = sessionStorage.getItem(home_player_field_name);
+            let load_home_team = "Empty";
+            if (sessionStorage[home_team_field_name]){
+                load_home_team = sessionStorage.getItem(home_team_field_name);
             }
-            update_playerHTML(load_season, load_home_player, home_player_field);
+            update_teamHTML(load_season, load_home_team, home_team_field);
 
-            let load_away_player = "Empty";
-            if (sessionStorage[away_player_field_name]){
-                load_away_player = sessionStorage.getItem(away_player_field_name);
+            let load_away_team = "Empty";
+            if (sessionStorage[away_team_field_name]){
+                load_away_team = sessionStorage.getItem(away_team_field_name);
             }
-            update_playerHTML(load_season, load_away_player, away_player_field);
+            update_teamHTML(load_season, load_away_team, away_team_field);
+
+            for (let i = 0; i < 8; i++){
+                let home_player_field_name = "home_players-" + i + "-player";
+                let away_player_field_name = "away_players-" + i + "-player";
+
+                let home_player_field = document.getElementById(home_player_field_name);
+                let away_player_field = document.getElementById(away_player_field_name);
+
+                let load_home_player = "Empty";
+                if (sessionStorage[home_player_field_name]){
+                    load_home_player = sessionStorage.getItem(home_player_field_name);
+                }
+                update_playerHTML(load_season, load_home_player, home_player_field);
+
+                let load_away_player = "Empty";
+                if (sessionStorage[away_player_field_name]){
+                    load_away_player = sessionStorage.getItem(away_player_field_name);
+                }
+                update_playerHTML(load_season, load_away_player, away_player_field);
+            }
         }
     });
 }
@@ -219,12 +326,40 @@ function swap_teams_button(){
         let swap_teams_button = document.getElementById("swap_teams_button");
         let submit_button = document.getElementById("submit_button");
         let season_field = document.getElementById("season");
+
+        let away_team_field_name = "away_team";
+        let home_team_field_name = "home_team";
+
+        let home_team_field = document.getElementById(home_team_field_name);
+        let away_team_field = document.getElementById(away_team_field_name);
+
         swap_teams_button.addEventListener("click", function(event){
             event.preventDefault();
             submit_button.classList.add("disabled");
             swap_teams_button.classList.add("disabled");
             season_field.classList.add("disabled");
+            home_team_field.classList.add("disabled");
+            away_team_field.classList.add("disabled");
             delete_containers();
+
+            let season = season_field.value;
+
+            let load_home_team = "Empty";
+            let load_away_team = "Empty";
+
+            if (sessionStorage[home_team_field_name]){
+                load_away_team = sessionStorage.getItem(home_team_field_name);
+            }
+
+            if (sessionStorage[away_team_field_name]){
+                load_home_team = sessionStorage.getItem(away_team_field_name);
+            }
+
+            update_teamHTML(season, load_home_team, home_team_field);
+            sessionStorage.setItem(home_team_field_name, load_home_team);
+            update_teamHTML(season, load_away_team, away_team_field);
+            sessionStorage.setItem(away_team_field_name, load_away_team);
+
             for (let i = 0; i < 8; i++){
                 let home_player_field_name = "home_players-" + i + "-player";
                 let away_player_field_name = "away_players-" + i + "-player";
@@ -242,8 +377,6 @@ function swap_teams_button(){
                     load_home_player = sessionStorage.getItem(away_player_field_name);
                 }
 
-                let season = season_field.value;
-
                 update_playerHTML(season, load_away_player, away_player_field);
                 sessionStorage.setItem(away_player_field_name, load_away_player);
                 update_playerHTML(season, load_home_player, home_player_field);
@@ -253,6 +386,8 @@ function swap_teams_button(){
                 submit_button.classList.remove("disabled");
                 swap_teams_button.classList.remove("disabled");
                 season_field.classList.remove("disabled");
+                home_team_field.classList.remove("disabled");
+                away_team_field.classList.remove("disabled");
             }, 1000);
         });
     });
@@ -274,14 +409,14 @@ function clear_team_button(){
     });
 }
 playerlist_update();
+team_update();
 for (let i = 0; i < 8; i++){
     let home_player = "home_players-" + i + "-player";
     let away_player = "away_players-" + i + "-player";
-    let season = "season";
 
     playerfield_update(home_player, away_player);
-    page_reload(season, home_player, away_player);
 }
+page_reload();
 swap_teams_button();
 clear_team_button();
 </script>

@@ -15,8 +15,8 @@ class PlayerSelectionForm(FlaskForm):
         year_options.append((str(i), f"{i}-{i + 1}"))
 
     season = SelectField('Season', validators=[InputRequired()], choices=year_options)
-    home_autofill = SelectField('Home_Autofill', choices=[])
-    away_autofill = SelectField('Away_Autofill', choices=[])
+    home_team = SelectField('Home_Team', choices=[])
+    away_team = SelectField('Away_Team', choices=[])
     home_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8)
     away_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8)
 
