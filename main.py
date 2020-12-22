@@ -65,12 +65,12 @@ def player_validation(away_players, home_players):
 
 
 # Processes information entered into form - returns an array of stats to be analyzed by our model
-def get_stats(home_players, away_players):
+def get_stats(season, home_players, away_players):
     home_stats = []
     for player in home_players:
-        player_id = player["player_name"]
+        player_id = player["player"]
         if player_id != "Empty":
-            query = select([players]).where(and_(players.c.YEAR == "2019", players.c.PLAYER_ID == player_id))
+            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
 
@@ -81,9 +81,9 @@ def get_stats(home_players, away_players):
 
     away_stats = []
     for player in away_players:
-        player_id = player["player_name"]
+        player_id = player["player"]
         if player_id != "Empty":
-            query = select([players]).where(and_(players.c.YEAR == "2019", players.c.PLAYER_ID == player_id))
+            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
 
@@ -136,13 +136,14 @@ def homepage():
         away_player.player.choices = player_choices
 
     if request.method == "POST":
+        season = form.season.data
         home_players = form.home_players.data
         away_players = form.away_players.data
 
         if player_validation(away_players, home_players) != "Validated":
             flash(player_validation(away_players, home_players), "error")
         else:
-            stats = np.array([get_stats(home_players, away_players)])
+            stats = np.array([get_stats(season, home_players, away_players)])
             prediction = model.predict(stats)
             message = "The probability that the home team wins is " + str((prediction[0][0] * 100).round(1)) + "%"
             flash(message, "success")
