@@ -195,7 +195,7 @@ def autofill(year, team_id):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct()
+    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct().order_by(players.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
 
