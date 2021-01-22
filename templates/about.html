@@ -1,0 +1,28 @@
+{%  extends "layout.html" %}
+
+{% block content %}
+<div class="subheading">
+    <p>Data Collection The dataset used was collected from stats.nba.com, the official NBA statistics website. Each game from seasons 2016-2020 were analyzed and logged by our program through the use of web requests. For every game, the two teams playing were analyzed using the stats of the eight players with the most minutes played from each team.</p>
+
+    <p>We collected the following thirteen statistics from each player: Points scored Free throws made Free throws attempted Field goals made Field goals attempted Three-pointers made Three-pointers attempted Assists Turnovers Steals Blocks Offensive rebounds Defensive rebounds Personal fouls</p>
+
+    <p>We scaled the statistics of each player to the predicted minutes played to represent the expected production of the players given the quality of their teammates. While this is not necessary when analyzing real rosters, it is necessary to balance the performance of the players when predicting games between fictional rosters due to the limited playtime available for the players (e.g., a team consisting of eight Lebron James&rsquo;s would not be expected to average over 240+ points simply due to playtime restrictions).</p>
+
+    <p>The individual statistics for each teams&rsquo; eight players were used to generate the thirteen team statistics.</p>
+
+    <p>The team statistics are as follows: Total points scored True shooting percentage Total free throws attempted Free throw percentage Total three-pointers attempted Three-point percentage Total assists Total turnovers Total offensive rebounds Total defensive rebounds Total steals Total blocks Total personal fouls</p>
+
+    <p>Thus, a total 26 statistics are collected for each game, 13 for each team.</p>
+
+    <p>Creating the Model Using the sklearn python package, we created a logistic regression model that would predict the outcome of an NBA game. Of the five seasons of data we had collected, 80% was used to train the model, and a random 20% was selected for validation. After tuning the hyperparameters for the model, we were able to reach an accuracy of about 65%, which is sufficient given the randomness of NBA games and the limited scope of information available to the model. We hope to continue improving upon the quality and accuracy of our model in the future.</p>
+
+    <p>Creating the Web Application We used the Flask python package to develop our web application, and the wtforms python package to create the form for entering the players on each team. HTML, CSS, and Javascript code was used to design the rest of the website and its functionality.</p>
+
+    <p>About Us: Anshul Mittal: first-year Computer Science major at the Georgia Institute of Technology  Jiebin Liang: first-year Engineering student at Rutgers University</p>
+
+    <p>This began as a project for our Engineering Research class at Manalapan High School, under the Science and Engineering Magnet Program. After we graduated, we decided to continue expanding upon the idea and create a fully functional website.</p>
+
+    <p>The purpose of our application is to allow NBA fans to view the predicted result of NBA games, using both real and fictional rosters, and to solve once for all if KD or Lebron is better.</p></h2>
+</div>
+
+{% endblock content %}

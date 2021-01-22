@@ -149,6 +149,7 @@ def homepage():
             flash(player_validation(away_players, home_players), "error")
         else:
             stats = np.array([get_stats(season, home_players, away_players)])
+            print(stats)
             prediction = model.predict_proba(stats)
             message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
             flash(message, "success")
@@ -208,6 +209,12 @@ def teamlist(year):
         team_array.append(teamObj)
 
     return jsonify({"teams": team_array})
+
+
+# Route for about us page
+@app.route('/about')
+def about_page():
+    return render_template('about.html', title='About Us')
 
 
 if __name__ == '__main__':
