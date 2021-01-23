@@ -15,6 +15,19 @@
     background-size: cover;
   }
 
+  button {
+    font-family: inherit;
+    font-weight: light;
+    text-align: center;
+    display: block;
+    margin: auto;
+    padding: 5px;
+  }
+
+  .button {
+    text-decoration:none;
+  }
+
   .heading {
     text-align: center;
     background-color: black;
@@ -85,7 +98,8 @@
     width: 85%;
     border: 1px black;
     border-style: solid;
-    border-width: 6px;
+    border-width: 5px;
+    border-radius: 15px;
     overflow: hidden;
     margin: 100px auto 25px auto;
     height: auto;
