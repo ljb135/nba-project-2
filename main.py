@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, flash
+from flask import Flask, render_template, jsonify, request, flash, send_from_directory
 from forms import PlayerSelectionForm
 import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
@@ -216,6 +216,9 @@ def teamlist(year):
 def about_page():
     return render_template('about.html', title='About Us')
 
+# @app.route('/img/NBA_background.png')
+# def send_file(filename):
+#     return send_from_directory(, filename)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)

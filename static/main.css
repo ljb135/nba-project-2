@@ -8,7 +8,7 @@
     padding: 0;
     font-family: 'Raleway', serif;
     color: #444;
-    background-image: url("https://wallpaperaccess.com/full/103114.jpg");
+    background-image: url('NBA_background.png');
     min-height: 100%;
     background-position: top;
     background-repeat: no-repeat;
@@ -17,15 +17,15 @@
 
   button {
     font-family: inherit;
-    font-weight: light;
+    font-weight: normal;
+    font-size: 16px;
     text-align: center;
     display: block;
     margin: auto;
     padding: 5px;
-  }
-
-  .button {
-    text-decoration:none;
+    border-radius: 10px;
+    width: 70%;
+    box-shadow: 2px 2px;
   }
 
   .heading {
@@ -38,6 +38,10 @@
   .subheading {
     text-align: center;
     padding: 15px;
+    border-style: solid;
+    border-width: 2px;
+    margin: 20px;
+    border-radius: 5px;
   }
 
   .disabled {
@@ -47,7 +51,8 @@
 
   .buttons {
     font-family: 'Raleway', sans-serif;
-    font-weight: light;
+    font-weight: lighter;
+    text-decoration:none;
     text-align: center;
     display: block;
     margin: auto;
@@ -114,7 +119,7 @@
 
   h1 {
     font-family: 'Raleway', sans-serif;
-    font-weight: light;
+    font-weight: lighter;
     display: block;
     font-size: 42px;
     margin: auto;
@@ -162,7 +167,7 @@
   ul {
     list-style-type: square;
     overflow: hidden;
-    margin: 0px 0px 0px 0px;
+    margin: 0px 0px 10px 0px;
   }
 
   select {
@@ -179,15 +184,16 @@
 
   form input#submit {
     height: auto;
-    width: 90%;
-    margin: auto auto auto 5px;
+    width: 60%;
+    margin: 10px auto auto auto;
     padding: 5px;
-    border: 1px solid #d8d8d8;
+    border: 2px solid black;
     font-weight: bold;
-    font-size:22px;
+    font-size:25px;
     text-align: center;
     color: #000000;
     background-color: #f4f4f4;
+    border-radius: 10px;
   }
 
   form input#submit:hover{
