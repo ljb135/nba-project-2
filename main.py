@@ -131,6 +131,7 @@ def stats_mod(home_players, away_players):
 
 # Route for webapp homepage - contains form
 @app.route('/', methods=('GET', 'POST'))
+@app.route('/home', methods=('GET', 'POST'))
 def homepage():
     form = PlayerSelectionForm()
 
