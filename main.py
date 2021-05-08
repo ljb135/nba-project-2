@@ -155,7 +155,14 @@ def homepage():
             message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
             flash(message, "success")
 
-    return render_template('request.html', form=form, title='Home')
+    # return render_template('request.html', form=form, title='Home')
+    return render_template('requestBS.html', title='Home')
+
+
+# Route for about us page
+@app.route('/about')
+def about_page():
+    return render_template('about.html', title='About Us')
 
 
 # Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
@@ -211,15 +218,10 @@ def teamlist(year):
 
     return jsonify({"teams": team_array})
 
-
-# Route for about us page
-@app.route('/about')
-def about_page():
-    return render_template('about.html', title='About Us')
-
 # @app.route('/img/NBA_background.png')
 # def send_file(filename):
 #     return send_from_directory(, filename)
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
