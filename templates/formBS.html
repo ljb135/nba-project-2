@@ -1,14 +1,50 @@
 {%  extends "layoutBS.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <ul>
-        <h2>
-            <li>Enter 8 players on the home team and the away team</li>
-            <li>Use the Autofill dropdown to automatically fill in the 8 players that averaged the most minutes that season (minimum 5 games played).</li>
-            <li>Players are assigned to the teams they were on at the end of the season. </li>
-        </h2>
-    </ul>
-    <a href="about" class="buttons"><button>Background/About Us</button></a>
+<div class="container-fluid bg-secondary text-light pt-4 pb-4">
+  <center>
+    <h1 class="display-3">Predict</h1>
+  </center>
 </div>
+
+<div class="container-fluid bg-light pt-4 pb-4">
+  <form method="POST" action="" role="form">
+    {{ form.csrf }}
+    <div class="row">
+      <h3><center>Select a Season: {{ form.season }}</center></h3>
+    </div>
+    <div class="row">
+      <div class="col-5">
+        <center>
+          <h2>Home Team</h2>
+          <h3>Autofill: {{ form.home_team }} </h3>
+          {% for home_player in form.home_players %}
+            <h3>{{ loop.index }}. {{ home_player.player }}</h3>
+          {% endfor %}
+        </center>
+      </div>
+      <div class="col-2 align-self-center">
+        <center>
+          <button type="button" class="btn btn-primary">Swap Teams</button>
+        </center>
+      </div>
+      <div class="col-5">
+        <center>
+          <h2>Away Team</h2>
+          <h3>Autofill: {{ form.away_team }} </h3>
+          {% for away_player in form.away_players %}
+            <h3>{{ loop.index }}. {{ away_player.player }}</h3>
+          {% endfor %}
+        </center>
+      </div>
+    </div>
+    <div class="container mt-3">
+      <center>
+        <button type="button" class="btn btn-primary">Save Teams</button>
+        <button type="submit" class="btn btn-primary">Predict!</button>
+      </center>
+    </div>
+  </form>
+</div>
+
 {% endblock content %}
