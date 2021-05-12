@@ -1,0 +1,83 @@
+{%  extends "layoutBS.html" %}
+
+{% block content %}
+
+<div class="container-fluid" style= "background-image: url('/static/NBA_background.png')">
+  <div class="row min-vh-100">
+    <div class="container-fluid my-auto">
+      <center>
+        <h1 class="display-1">Welcome to NBA Predict</h1>
+        <h2><small>Enter two teams, either real or completely random, to see our model’s prediction for which team would win an NBA game!</small></h2>
+        <a href="#body" class="btn btn-primary" style="margin-top: 5px;">Get Started</a>
+      </center>
+    </div>
+  </div>
+</div>
+
+<div id="body" class="container-fluid mt-5">
+  <div class="row">
+    <div class="col-md">
+      <center>
+        <h1>Using the Predictor</h1>
+        <a href="form" class="btn btn-primary" style="margin-top: 5px;">Predict</a>
+      </center>
+    </div>
+    <div class="col-md">
+      <div class="accordion" id="instructions">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+              Select a Season
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#instructions">
+            <div class="accordion-body">
+              Pick a season which the players will be taken from.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingTwo">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              Enter the Players
+            </button>
+          </h2>
+          <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#instructions">
+            <div class="accordion-body">
+              Enter any 8 players on each team OR use the auto fill drop down to automatically fill in the players from the selected team.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingThree">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+              Predict the Game
+            </button>
+          </h2>
+          <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#instructions">
+            <div class="accordion-body">
+              Click predict to see the likelihood that the home team wins.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingFour">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapsFour">
+              Repeat!
+            </button>
+          </h2>
+          <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#instructions">
+            <div class="accordion-body">
+              Edit the teams or swap home/away and predict again.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+
+  </div>
+</div>
+
+{% endblock content %}

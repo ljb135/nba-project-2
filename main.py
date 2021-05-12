@@ -156,7 +156,7 @@ def homepage():
             flash(message, "success")
 
     # return render_template('request.html', form=form, title='Home')
-    return render_template('requestBS.html', title='Home')
+    return render_template('formBS.html', title='Home')
 
 
 # Route for about us page

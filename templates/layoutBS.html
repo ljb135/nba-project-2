@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>NBA-Project - {{ title }}</title>
+    <title>NBA Predict - {{ title }}</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <script src="static/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="home">NBA Predict</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="home">Predict</a>
+                    <a class="nav-link" href="home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="form">Predict</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="about">About Us</a>
@@ -23,11 +27,6 @@
             </ul>
         </div>
     </nav>
-    <div class="container-fluid pt-5 pb-5" style= "background-image: url('/static/NBA_background.png')">
-        <h1 class="display-1"><center>Statistical Analysis and Prediction of the NBA</center></h1>
-    </div>
-    <div class="container-fluid">
-        {% block content %} {% endblock content %}
-    </div>
+    {% block content %} {% endblock content %}
 </body>
 </html>
