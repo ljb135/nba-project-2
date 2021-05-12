@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NBA-Project - {{ title }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/style.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="static/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -16,7 +15,7 @@
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="home">Predict</a>
+                    <a class="nav-link" href="home">Predict</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="about">About Us</a>
@@ -24,8 +23,8 @@
             </ul>
         </div>
     </nav>
-    <div class="container-fluid pt-4" style= "background-image: url('/static/NBA_background.png')">
-        <h1><center>Statistical Analysis and Prediction of the NBA</center></h1>
+    <div class="container-fluid pt-5 pb-5" style= "background-image: url('/static/NBA_background.png')">
+        <h1 class="display-1"><center>Statistical Analysis and Prediction of the NBA</center></h1>
     </div>
     <div class="container-fluid">
         {% block content %} {% endblock content %}
