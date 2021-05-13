@@ -32,6 +32,10 @@ def form_page():
 
     return render_template('formBS.html', title='Form', form=form)
 
+# Route for background page
+@app.route('/model')
+def model_page():
+    return render_template('modelBS.html', title='Our Model')
 
 # Route for about us page
 @app.route('/about')
