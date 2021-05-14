@@ -2,14 +2,16 @@
 
 {% block content %}
 
-<div id="hero" class="container-fluid" style= "background-image: url('/static/NBA_background.png')">
-  <div class="row min-vh-100">
-    <div class="container-fluid my-auto">
-      <center>
-        <h1 class="display-1"><strong>Welcome to NBA Predict</strong></h1>
-        <h2><small>Enter two teams, either real or completely random, to see our model’s prediction for which team would win an NBA game!</small></h2>
-        <a href="#body" class="btn btn-primary" style="margin-top: 5px;">Get Started</a>
-      </center>
+<div id="hero" class="bg-image" style= "background-image: url('/static/NBA_background.png')">
+  <div class="mask" style="background: linear-gradient(rgb(33 37 41), rgba(0, 0, 0, 0.5) 40%);">
+    <div class="row justify-content-center min-vh-100">
+      <div class="col-10 col-md-8 my-auto text-light">
+        <center>
+          <h1 class="display-1">Welcome to <strong>NBA Predict</strong></h1>
+          <h2><small>Enter two teams, either real or completely random, to see our model’s prediction for which team would win an NBA game!</small></h2>
+          <a href="#body" class="btn btn-primary mt-3">Get Started</a>
+        </center>
+      </div>
     </div>
   </div>
 </div>
