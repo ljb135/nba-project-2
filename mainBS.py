@@ -56,7 +56,7 @@ def home_page():
 def form_page():
     form = PlayerSelectionForm()
 
-    player_choices = [("Select", "Select Player")]
+    player_choices = [("Default", "Select Player")]
     for home_player in form.home_players:
         home_player.player.choices = player_choices
     for away_player in form.away_players:
@@ -69,10 +69,12 @@ def form_page():
 
     return render_template('formBS.html', title='Form', form=form)
 
+
 # Route for background page
 @app.route('/model')
 def model_page():
     return render_template('modelBS.html', title='Our Model')
+
 
 # Route for about us page
 @app.route('/about')
@@ -80,7 +82,7 @@ def about_page():
     return render_template('aboutBS.html', title='About Us')
 
 
-# Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
+# Queries database for list of players given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
     query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(players.c.YEAR == year)
@@ -92,13 +94,13 @@ def playerlist(year):
     for player in result:
         playerObj = {}
         playerObj["name"] = player.NAME + ", " + player.TEAM
-        playerObj["player_id"] = player.PLAYER_ID
+        playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
     return jsonify({"players": player_array})
 
 
-# Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
+# Queries database for list of players given the team and year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/autofill/<year>/<team_id>')
 def autofill(year, team_id):
     query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(and_(players.c.YEAR == year, players.c.TEAM_ID == team_id)).order_by(players.c.MIN.desc()).limit(8)
@@ -110,7 +112,7 @@ def autofill(year, team_id):
     for player in result:
         playerObj = {}
         playerObj["name"] = player.NAME + ", " + player.TEAM
-        playerObj["player_id"] = player.PLAYER_ID
+        playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
     return jsonify({"players": player_array})
@@ -128,7 +130,7 @@ def teamlist(year):
     for team in result:
         teamObj = {}
         teamObj["name"] = team.TEAM_NAME
-        teamObj["team_id"] = team.TEAM_ID
+        teamObj["teamID"] = team.TEAM_ID
         team_array.append(teamObj)
 
     return jsonify({"teams": team_array})
