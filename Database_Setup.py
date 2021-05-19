@@ -4,49 +4,39 @@ import gzip
 import json
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey
 
-
 db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 meta = MetaData()
 
-# players = Table('players', meta,
-#                 Column('NAME', String),
-#                 Column('PLAYER_ID', String, primary_key=True),
-#                 Column('TEAM', String),
-#                 Column('TEAM_ID', String),
-#                 Column('YEAR', String, primary_key=True),
-#                 Column('AGE', Integer),
-#                 Column('HEIGHT', Integer),
-#                 Column('WEIGHT', Integer),
-#                 Column('MIN', Integer),
-#                 Column('PTS', Integer),
-#                 Column('FTM', Integer),
-#                 Column('FTA', Integer),
-#                 Column('FT_PCT', Integer),
-#                 Column('FGM', Integer),
-#                 Column('FGA', Integer),
-#                 Column('FG_PCT', Integer),
-#                 Column('FG3M', Integer),
-#                 Column('FG3A', Integer),
-#                 Column('FG3_PCT', Integer),
-#                 Column('AST', Integer),
-#                 Column('TOV', Integer),
-#                 Column('STL', Integer),
-#                 Column('BLK', Integer),
-#                 Column('OREB', Integer),
-#                 Column('DREB', Integer),
-#                 Column('PF', Integer),
-#                 Column('OFF_RTG', Integer),
-#                 Column('DEF_RTG', Integer),
-#                 Column('PACE', Integer))
-# meta.create_all(db)
-
-teams = Table('teams', meta,
-                Column('TEAM_ID', String),
-                Column('TEAM_NAME', String),
-                Column('FROM_YEAR', String),
-                Column('TO_YEAR', String))
+players2 = Table('players2', meta,
+                 Column('NAME', String),
+                 Column('PLAYER_ID', String, primary_key=True),
+                 Column('TEAM_ABR', String),
+                 Column('TEAM_NAME', String),
+                 Column('TEAM_ID', String),
+                 Column('YEAR', String, primary_key=True),
+                 Column('AGE', Integer),
+                 Column('HEIGHT', Integer),
+                 Column('WEIGHT', Integer),
+                 Column('GP', Integer),
+                 Column('MIN', Integer),
+                 Column('PTS', Integer),
+                 Column('FTM', Integer),
+                 Column('FTA', Integer),
+                 Column('FT_PCT', Integer),
+                 Column('FGM', Integer),
+                 Column('FGA', Integer),
+                 Column('FG_PCT', Integer),
+                 Column('FG3M', Integer),
+                 Column('FG3A', Integer),
+                 Column('FG3_PCT', Integer),
+                 Column('AST', Integer),
+                 Column('TOV', Integer),
+                 Column('STL', Integer),
+                 Column('BLK', Integer),
+                 Column('OREB', Integer),
+                 Column('DREB', Integer),
+                 Column('PF', Integer))
 meta.create_all(db)
-
 
 # def get_seasonal_stats(season):
 #     param = f"{season}-{str((season + 1) % 100).zfill(2)}"
