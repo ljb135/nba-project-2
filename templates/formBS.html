@@ -2,12 +2,23 @@
 
 {% block content %}
 
+{% macro render_field(field) %}
+    {{ field }}
+    {% if field.errors %}
+        {% for error in field.errors %}
+            <br><small id="error" class="form-text text-danger ">
+                {{ error }}
+            </small>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
 <div class="container-fluid bg-secondary text-light pt-4 pb-4">
   <center>
     <h1 class="display-3">Predict</h1>
   </center>
 </div>
-<div class="container-fluid bg-light vh-100 pt-4">
+<div class="container-fluid bg-light min-h-100 pt-4">
   <div class="card mx-auto my-auto w-75">
     <div class="card-body">
       <center>
@@ -17,10 +28,8 @@
   </div>
   <form id="form" method="POST" action="" role="form">
     {{ form.hidden_tag() }}
-    <div class="row pt-4 pb-4">
-      <center>
+    <div class="row pt-4 pb-4 text-center">
         <h3>Select a Season: {{ form.season }}</h3>
-      </center>
     </div>
     <div class="row justify-content-center pt-2 pb-2">
       <div class="col-xxl-5 col-lg-6 col-xs-12 text-center">
@@ -31,7 +40,7 @@
           </div>
           <div class="col-6 align-self-center">
               {% for home_player in form.home_players %}
-                <h3>{{ loop.index }}. {{ home_player.player }}</h3>
+                <h3>{{ loop.index }}. {{ render_field(home_player.player) }}</h3>
               {% endfor %}
           </div>
         </div>
@@ -40,7 +49,7 @@
         <div class="row justify-content-center">
           <div class="col-6 align-self-center">
               {% for away_player in form.away_players %}
-                <h3>{{ loop.index }}. {{ away_player.player }}</h3>
+                <h3>{{ loop.index }}. {{ render_field(away_player.player) }}</h3>
               {% endfor %}
           </div>
           <div class="col-6 align-self-center">
@@ -50,25 +59,31 @@
         </div>
       </div>
     </div>
-    <div class="container mt-3 text-center">
+    <div class="container pt-3 text-center">
         <button name="clear_home" type="button" class="btn btn-secondary">Clear Home Team</button>
         <button name="swap_teams" type="button" class="btn btn-secondary">Swap Teams</button>
         <button name="clear_away" type="button" class="btn btn-secondary">Clear Away Team</button>
     </div>
-    <div class="container mt-3 text-center">
-        <button name="save_teams" type="button" class="btn btn-primary">Save Teams</button>
-        <button name="submit" type="submit" class="btn btn-primary">Predict!</button>
+    <div class="container pt-3 pb-4 text-center">
+        <button name="submit" type="submit" class="btn btn-primary btn-lg">Predict!</button>
     </div>
   </form>
-    {% if form.errors %}
-        {{ form.errors }}
-    {% endif %}
+  <div id="prediction" class="container pb-3 text-center">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        {% endif %}
+      {% endwith %}
+  </div>
 </div>
 <script>
-const [,season_field, home_team_field, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_team_field, clear_home_button, swap_teams_button, clear_away_button, save_teams_button, submit_button] = document.getElementById("form").elements;
-const form_elements = [season_field, home_team_field, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_team_field, clear_home_button, swap_teams_button, clear_away_button, save_teams_button, submit_button];
+const [,season_field, home_team_field, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_team_field, clear_home_button, swap_teams_button, clear_away_button, submit_button] = document.getElementById("form").elements;
+const form_elements = [season_field, home_team_field, home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8, away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8, away_team_field, clear_home_button, swap_teams_button, clear_away_button, submit_button];
 const home_player_fields = [home_player_1, home_player_2, home_player_3, home_player_4, home_player_5, home_player_6, home_player_7, home_player_8];
 const away_player_fields = [away_player_1, away_player_2, away_player_3, away_player_4, away_player_5, away_player_6, away_player_7, away_player_8];
+const prediction_container = document.getElementById("prediction");
 
 function update_seasonHTML(selected_season, season_field) {
     let season_optionHTML = "<option value=Default>Select Season</option>";
@@ -130,8 +145,10 @@ function update_teamHTML(selected_season, selected_team, team_field) {
 }
 function season_change() {
     season_field.onchange = function() {
+        prediction_container.innerHTML = "";
+        sessionStorage.clear();
         let selected_season = season_field.value;
-        sessionStorage.setItem("season", selected_season);
+        sessionStorage.setItem(season_field.name, selected_season);
 
         update_teamHTML(selected_season, "Default", home_team_field);
         update_teamHTML(selected_season, "Default", away_team_field);
@@ -146,50 +163,64 @@ function season_change() {
 }
 function team_change() {
     home_team_field.onchange = function() {
+        for(let element of form_elements) {
+            element.disabled = true;
+        }
+        prediction_container.innerHTML = "";
         let selected_team = home_team_field.value;
+        sessionStorage.setItem(home_team_field.name, selected_team);
 
         fetch("/autofill/" + season_field.value + "/" + selected_team).then(function(response) {
             response.json().then(function(data) {
                 for (let i = 0; i < home_player_fields.length; i++) {
-                    let autofill_playerID = data.players[i].playerID;
-                    update_playerHTML(season_field.value, autofill_playerID, home_player_fields[i]);
+                    let autofill_player = data.players[i].playerID;
+                    sessionStorage.setItem(home_player_fields[i].name, autofill_player);
+                    update_playerHTML(season_field.value, autofill_player, home_player_fields[i]);
                 }
             });
         });
+        setTimeout(function() {
+            for(let element of form_elements) {
+                element.disabled = false;
+            }
+        }, 1000);
     };
     away_team_field.onchange = function() {
+        for(let element of form_elements) {
+            element.disabled = true;
+        }
+        prediction_container.innerHTML = "";
         let selected_team = away_team_field.value;
+        sessionStorage.setItem(away_team_field.name, selected_team);
 
         fetch("/autofill/" + season_field.value + "/" + selected_team).then(function(response) {
             response.json().then(function(data) {
                 for (let i = 0; i < away_player_fields.length; i++) {
-                    let autofill_playerID = data.players[i].playerID;
-                    update_playerHTML(season_field.value, autofill_playerID, away_player_fields[i]);
+                    let autofill_player = data.players[i].playerID;
+                    sessionStorage.setItem(away_player_fields[i].name, autofill_player);
+                    update_playerHTML(season_field.value, autofill_player, away_player_fields[i]);
                 }
             });
         });
+        setTimeout(function() {
+            for(let element of form_elements) {
+                element.disabled = false;
+            }
+        }, 1000);
     };
 }
 function player_change(player_field, team_field) {
     player_field.onchange = function(){
-        update_teamHTML(season, "Default", team_field);
+        prediction_container.innerHTML = "";
+        sessionStorage.setItem(player_field.name, player_field.value);
+        update_teamHTML(season_field.value, "Default", team_field);
     };
-}
-function save_teams() {
-    sessionStorage.setItem(home_team_field.name, home_team_field.value);
-    sessionStorage.setItem(away_team_field.name, away_team_field.value);
-    for (let player_field of home_player_fields) {
-        sessionStorage.setItem(player_field.name, player_field.value);
-    }
-    for (let player_field of away_player_fields) {
-        sessionStorage.setItem(player_field.name, player_field.value);
-    }
 }
 function swap_teams_button_handler() {
     document.addEventListener("DOMContentLoaded", function() {
         swap_teams_button.addEventListener("click", function(event) {
             event.preventDefault();
-            save_teams();
+            prediction_container.innerHTML = "";
             for(let element of form_elements) {
                 element.disabled = true;
             }
@@ -198,12 +229,14 @@ function swap_teams_button_handler() {
             if (sessionStorage[away_team_field.name]) {
                 new_home_team = sessionStorage.getItem(away_team_field.name);
             }
+            sessionStorage.setItem(home_team_field.name, new_home_team);
             update_teamHTML(season_field.value, new_home_team, home_team_field);
 
             let new_away_team = "Default";
             if (sessionStorage[home_team_field.name]) {
                 new_away_team = sessionStorage.getItem(home_team_field.name);
             }
+            sessionStorage.setItem(away_team_field.name, new_away_team);
             update_teamHTML(season_field.value, new_away_team, away_team_field);
 
             for (let i = 0; i < 8; i++) {
@@ -211,28 +244,21 @@ function swap_teams_button_handler() {
                 if (sessionStorage[away_player_fields[i].name]) {
                     new_home_player = sessionStorage.getItem(away_player_fields[i].name);
                 }
+                sessionStorage.setItem(home_player_fields[i].name, new_home_player);
                 update_playerHTML(season_field.value, new_home_player, home_player_fields[i]);
 
                 let new_away_player = "Default";
                 if (sessionStorage[home_player_fields[i].name]) {
                     new_away_player = sessionStorage.getItem(home_player_fields[i].name);
                 }
+                sessionStorage.setItem(away_player_fields[i].name, new_away_player);
                 update_playerHTML(season_field.value, new_away_player, away_player_fields[i]);
             }
             setTimeout(function() {
                 for(let element of form_elements) {
                     element.disabled = false;
                 }
-                save_teams();
             }, 1000);
-        });
-    });
-}
-function save_teams_button_handler() {
-    document.addEventListener("DOMContentLoaded", function() {
-        save_teams_button.addEventListener("click", function(event) {
-            event.preventDefault();
-            save_teams();
         });
     });
 }
@@ -240,6 +266,7 @@ function clear_team_button_handler() {
     document.addEventListener("DOMContentLoaded", function() {
         clear_home_button.addEventListener("click", function(event) {
             event.preventDefault();
+            prediction_container.innerHTML = "";
             update_teamHTML(season_field.value, "Default", home_team_field);
             sessionStorage.removeItem(home_team_field.name);
             for (let player_field of home_player_fields) {
@@ -249,6 +276,7 @@ function clear_team_button_handler() {
         });
         clear_away_button.addEventListener("click", function(event) {
             event.preventDefault();
+            prediction_container.innerHTML = "";
             update_teamHTML(season_field.value, "Default", away_team_field);
             sessionStorage.removeItem(away_team_field.name);
             for (let player_field of away_player_fields) {
@@ -261,43 +289,54 @@ function clear_team_button_handler() {
 function submit_button_handler() {
     document.addEventListener("DOMContentLoaded", function() {
         submit_button.addEventListener("click", function(event) {
-            save_teams();
+            prediction_container.style.display = "block";
         });
     });
 }
-function page_reload() {
-    window.addEventListener("load", function() {
-        if (sessionStorage[season_field.name]) {
-            let load_season = sessionStorage.getItem(season_field.name);
-            update_seasonHTML(load_season, season_field);
+function load_last_matchup() {
+    if (sessionStorage[season_field.name]) {
+        let load_season = sessionStorage.getItem(season_field.name);
+        update_seasonHTML(load_season, season_field);
 
-            let load_home_team = "Default";
-            if (sessionStorage[home_team_field.name]) {
-                load_home_team = sessionStorage.getItem(home_team_field.name);
-            }
-            update_teamHTML(load_season, load_home_team, home_team_field);
-
-            let load_away_team = "Default";
-            if (sessionStorage[away_team_field.name]) {
-                load_away_team = sessionStorage.getItem(away_team_field.name);
-            }
-            update_teamHTML(load_season, load_away_team, away_team_field);
-
-            for (let player_field of home_player_fields) {
-                let load_home_player = "Default";
-                if (sessionStorage[player_field.name]) {
-                    load_home_player = sessionStorage.getItem(player_field.name);
-                }
-                update_playerHTML(load_season, load_home_player, player_field);
-            }
-            for (let player_field of away_player_fields) {
-                let load_away_player = "Default";
-                if (sessionStorage[player_field.name]) {
-                    load_away_player = sessionStorage.getItem(player_field.name);
-                }
-                update_playerHTML(load_season, load_away_player, player_field);
-            }
+        let load_home_team = "Default";
+        if (sessionStorage[home_team_field.name]) {
+            load_home_team = sessionStorage.getItem(home_team_field.name);
         }
+        update_teamHTML(load_season, load_home_team, home_team_field);
+
+        let load_away_team = "Default";
+        if (sessionStorage[away_team_field.name]) {
+            load_away_team = sessionStorage.getItem(away_team_field.name);
+        }
+        update_teamHTML(load_season, load_away_team, away_team_field);
+
+        for (let player_field of home_player_fields) {
+            let load_home_player = "Default";
+            if (sessionStorage[player_field.name]) {
+                load_home_player = sessionStorage.getItem(player_field.name);
+            }
+            update_playerHTML(load_season, load_home_player, player_field);
+        }
+        for (let player_field of away_player_fields) {
+            let load_away_player = "Default";
+            if (sessionStorage[player_field.name]) {
+                load_away_player = sessionStorage.getItem(player_field.name);
+            }
+            update_playerHTML(load_season, load_away_player, player_field);
+        }
+    }
+}
+function page_reload(){
+    window.addEventListener("load", function(){
+        for(let element of form_elements) {
+            element.disabled = true;
+        }
+        load_last_matchup();
+        setTimeout(function() {
+            for(let element of form_elements) {
+                element.disabled = false;
+            }
+        }, 1000);
     });
 }
 season_change();
@@ -310,7 +349,6 @@ for (let player_field of away_player_fields) {
 }
 swap_teams_button_handler();
 clear_team_button_handler();
-save_teams_button_handler();
 submit_button_handler();
 page_reload();
 </script>

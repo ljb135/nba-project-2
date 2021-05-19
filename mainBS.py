@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, flash
 from forms import PlayerSelectionForm
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 import numpy as np
 import pickle
+from Data_Collection import Team  # change this
 
 # WebApp configuration and file paths
 app = Flask(__name__)
@@ -44,6 +45,68 @@ players = Table('v_players', meta,
                 Column('TEAM_NAME', String))
 
 
+# Processes information entered into form - returns an array of stats to be analyzed by our model
+def get_stats(season, home_players, away_players):
+    home_stats = []
+    for player in home_players:
+        player_id = player["player"]
+        if player_id != "Select":
+            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+            conn = db.connect()
+            result = conn.execute(query)
+
+            result = result.fetchone().values()
+            del result[26]
+            del result[6:8]
+            del result[:5]
+            home_stats.append(result)
+
+    away_stats = []
+    for player in away_players:
+        player_id = player["player"]
+        if player_id != "Select":
+            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+            conn = db.connect()
+            result = conn.execute(query)
+
+            result = result.fetchone().values()
+            del result[26]
+            del result[6:8]
+            del result[:5]
+            away_stats.append(result)
+
+    return np.array(stats_mod(home_stats, away_stats))
+
+
+def stats_mod(home_players, away_players):
+    game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
+    edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
+
+    home_total_min = 0
+    away_total_min = 0
+
+    for player in home_players:
+        home_total_min += player[1]
+    for player in away_players:
+        away_total_min += player[1]
+
+    home_min_ratio = 5*48/home_total_min
+    away_min_ratio = 5*48/away_total_min
+
+    # loops through all players on both teams and edits stats using minutes ratio
+    for player_number in range(len(home_players)):
+        for index in edit_stat_indexes:
+            home_players[player_number][index] = home_players[player_number][index] * home_min_ratio
+    for player_number in range(len(away_players)):
+        for index in edit_stat_indexes:
+            away_players[player_number][index] = away_players[player_number][index] * away_min_ratio
+
+    game_data_array.extend(Team(home_players).export())
+    game_data_array.extend(Team(away_players).export())
+
+    return game_data_array
+
+
 # Route for webapp homepage - contains form
 @app.route('/')
 @app.route('/home')
@@ -63,9 +126,17 @@ def form_page():
         away_player.player.choices = player_choices
 
     if request.method == "POST":
-        season = form.season.data
-        home_players = form.home_players.data
-        away_players = form.away_players.data
+        if form.validate_on_submit():
+            season = form.season.data
+            home_players = form.home_players.data
+            away_players = form.away_players.data
+
+            stats = np.array([get_stats(season, home_players, away_players)])
+            print("Home: ", stats[0][0:13])
+            print("Away: ", stats[0][13:])
+            prediction = model.predict_proba(stats)
+            message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
+            flash(message)
 
     return render_template('formBS.html', title='Form', form=form)
 
