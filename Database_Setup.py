@@ -40,10 +40,17 @@ players2 = Table('players2', meta,
                  Column('DEF_RTG', Integer),
                  # Hustle
                  Column('DEFL', Integer),
-                 # Defense Dashboard Overall
-                 Column('DFGM', Integer),
-                 Column('DFGA', Integer),
-                 Column('DFG_PCT', Integer))
+                 Column('LB_REC', Integer),
+                 Column('CONT_2P', Integer),
+                 Column('CONT_3P', Integer),
+                 # Defense Dashboard 2PT
+                 Column('DFG2M', Integer),
+                 Column('DFG2A', Integer),
+                 # Defense Dashboard 3PT
+                 Column('DFG3M', Integer),
+                 Column('DFG3A', Integer))
+
+
 # meta.create_all(db)
 
 # teams = Table('teams', meta,
