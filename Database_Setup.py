@@ -11,7 +11,6 @@ players2 = Table('players2', meta,
                  Column('NAME', String),
                  Column('PLAYER_ID', String, primary_key=True),
                  Column('TEAM_ABR', String),
-                 Column('TEAM_NAME', String),
                  Column('TEAM_ID', String),
                  Column('YEAR', String, primary_key=True),
                  Column('AGE', Integer),
@@ -78,11 +77,11 @@ def get_seasonal_stats(season):
 
     season_stats = {}
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None or player[5] < 5:
+        if player[1] is None:
             continue
         player_name = str(player[1])
         del player[30:]
-        delete_indexes = [5, 6, 7, 8, 21, 26, 28]
+        delete_indexes = [6, 7, 8, 21, 26, 28]
         for index in sorted(delete_indexes, reverse=True):
             del player[index]
         player[0] = str(player[0])
@@ -133,7 +132,7 @@ def get_seasonal_stats(season):
         if player[1] is None:
             continue
         player_name = str(player[1])
-        player = [player[11], player[14], player[32]]
+        player = [player[11], player[14]]
         try:
             season_stats[player_name] = season_stats[player_name] + player
         except Exception:
@@ -226,40 +225,41 @@ for year in range(2020, 2021):
         query = players2.insert().values(
             NAME=stats[2],
             PLAYER_ID=stats[1],
-            TEAM=stats[4],
+            TEAM_ABR=stats[4],
             TEAM_ID=stats[3],
             YEAR=stats[0],
             AGE=stats[5],
-            HEIGHT=stats[24],
-            WEIGHT=stats[25],
-            MIN=stats[6],
-            PTS=stats[23],
-            FTM=stats[13],
-            FTA=stats[14],
-            FT_PCT=stats[15],
-            FGM=stats[7],
-            FGA=stats[8],
-            FG_PCT=stats[9],
-            FG3M=stats[10],
-            FG3A=stats[11],
-            FG3_PCT=stats[12],
-            AST=stats[18],
-            TOV=stats[19],
-            STL=stats[20],
-            BLK=stats[21],
-            OREB=stats[16],
-            DREB=stats[17],
-            PF=stats[22],
-            OFF_RTG=stats[26],
-            DEF_RTG=stats[27],
-            DEFL=stats[28],
-            LB_REC=stats[29],
-            CONT_2P=stats[30],
-            CONT_3P=stats[31],
-            DFG2M=stats[32],
-            DFG2A=stats[33],
-            DFG3M=stats[34],
-            DFG3A=stats[35])
+            HEIGHT=stats[25],
+            WEIGHT=stats[26],
+            GP=stats[6],
+            MIN=stats[7],
+            PTS=stats[24],
+            FTM=stats[14],
+            FTA=stats[15],
+            FT_PCT=stats[16],
+            FGM=stats[8],
+            FGA=stats[9],
+            FG_PCT=stats[10],
+            FG3M=stats[11],
+            FG3A=stats[12],
+            FG3_PCT=stats[13],
+            AST=stats[19],
+            TOV=stats[20],
+            STL=stats[21],
+            BLK=stats[22],
+            OREB=stats[17],
+            DREB=stats[18],
+            PF=stats[23],
+            OFF_RTG=stats[27],
+            DEF_RTG=stats[28],
+            DEFL=stats[29],
+            LB_REC=stats[30],
+            CONT_2P=stats[31],
+            CONT_3P=stats[32],
+            DFG2M=stats[33],
+            DFG2A=stats[34],
+            DFG3M=stats[35],
+            DFG3A=stats[36])
         print("running query")
         conn = db.connect()
         result = conn.execute(query)
