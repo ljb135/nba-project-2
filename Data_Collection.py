@@ -8,7 +8,6 @@ import csv
 import Team
 import re
 import pandas as pd
-import numpy as np
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
@@ -155,41 +154,16 @@ class NBAGame:
 
     # inserts seasonal data into an array
     def compile_data(self):
-        game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
-        edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
+        game_data_array = [int(self.game_id), int(self.home_win)]  # array that stores the stats --> corresponds to a single row in the CSV file
 
-        game_data_array.append(int(self.game_id))  # adds gameID to array
-        game_data_array.append(int(self.home_win))  # adds win result to array
-
-        home_total_min = 0
-        away_total_min = 0
-
-        for player in self.home_players:
-            home_total_min += player[0]
-        for player in self.away_players:
-            away_total_min += player[0]
-
-        if len(self.home_players) < 5:
-            home_min_ratio = len(self.home_players) * 48 / home_total_min
-        else:
-            home_min_ratio = 5 * 48 / home_total_min
-        if len(self.away_players) < 5:
-            away_min_ratio = len(self.away_players) * 48 / away_total_min
-        else:
-            away_min_ratio = 5 * 48 / away_total_min
-
-        # loops through all players on both teams and edits stats using minutes ratio
-        for player_number in range(len(self.home_players)):
-            for index in edit_stat_indexes:
-                self.home_players[player_number][index] = self.home_players[player_number][index] * home_min_ratio
-        for player_number in range(len(self.away_players)):
-            for index in edit_stat_indexes:
-                self.away_players[player_number][index] = self.away_players[player_number][index] * away_min_ratio
+        calc_stats(self.home_players)
+        calc_stats(self.away_players)
 
         game_data_array.extend(Team(self.home_players).export())
         game_data_array.extend(Team(self.away_players).export())
 
         return game_data_array
+
 
 
 # finds all games on a specific day and returns a JSON containing info of all games on that day

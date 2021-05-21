@@ -1,3 +1,6 @@
+import numpy as np
+
+
 # converts a list of players stats into team stats
 class Team:
     def __init__(self, players_stats):
@@ -78,5 +81,5 @@ class Team:
 
     def export(self):
         return [self.pts, self.ts_pct, self.fta, self.ft_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.oreb,
-                self.dreb, self.stl, self.blk, self.pf]
-
+                self.dreb, self.stl, self.blk, self.defl, self.lb_rec, self.cont_2, self.cont_3, self.defg_pct,
+                self.off_rtg, self.def_rtg, self.pf]
