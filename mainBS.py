@@ -3,7 +3,7 @@ from forms import PlayerSelectionForm
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 import numpy as np
 import pickle
-from Data_Collection import Team  # change this
+import Team  # change this
 
 # WebApp configuration and file paths
 app = Flask(__name__)
