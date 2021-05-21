@@ -165,6 +165,35 @@ class NBAGame:
         return game_data_array
 
 
+def calc_stats(players):
+    total_min = 0
+    overflow = False
+
+    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25]
+
+    for player in players:
+        total_min += player[0]
+
+    min_ratio = 5 * 48 / total_min
+
+    unmod_players = []
+    for player in players:
+        if player[0] * min_ratio > 48:
+            min_ratio = 48 / player[0]
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+            overflow = True
+        else:
+            unmod_players.append(player)
+
+    if not overflow:
+        for player in players:
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+
+    else:
+        calc_stats(unmod_players)
+
 
 # finds all games on a specific day and returns a JSON containing info of all games on that day
 def games_on_date(month, day, year):
