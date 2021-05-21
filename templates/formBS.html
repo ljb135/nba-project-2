@@ -346,5 +346,8 @@ for (let player_field of away_player_fields) {
 swap_teams_button_handler();
 clear_team_button_handler();
 page_reload();
+if ( window.history.replaceState ) {
+  window.history.replaceState( null, null, window.location.href );
+}
 </script>
 {% endblock content %}

@@ -5,7 +5,7 @@ import datetime
 import gzip
 import json
 import csv
-import Team
+from Team import Team
 import re
 import pandas as pd
 
@@ -118,7 +118,7 @@ class NBAGame:
         result = conn.execute(query).fetchall()
         for player in result:
             player_stats = player.values()
-            delete_indexes = [13, 16, 19, 37]
+            delete_indexes = [13, 16, 19, 37, 38]
             for index in sorted(delete_indexes, reverse=True):
                 del player_stats[index]
             del player_stats[:9]
@@ -128,7 +128,7 @@ class NBAGame:
         result = conn.execute(query).fetchall()
         for player in result:
             player_stats = player.values()
-            delete_indexes = [13, 16, 19, 37]
+            delete_indexes = [13, 16, 19, 37, 38]
             for index in sorted(delete_indexes, reverse=True):
                 del player_stats[index]
             del player_stats[:9]
@@ -156,8 +156,8 @@ class NBAGame:
     def compile_data(self):
         game_data_array = [int(self.game_id), int(self.home_win)]  # array that stores the stats --> corresponds to a single row in the CSV file
 
-        calc_stats(self.home_players)
-        calc_stats(self.away_players)
+        calc_stats(self.home_players, 240)
+        calc_stats(self.away_players, 240)
 
         game_data_array.extend(Team(self.home_players).export())
         game_data_array.extend(Team(self.away_players).export())
@@ -165,34 +165,36 @@ class NBAGame:
         return game_data_array
 
 
-def calc_stats(players):
-    total_min = 0
+def calc_stats(players, rem_min):
     overflow = False
+    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]
 
-    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25]
-
+    total_min = 0
     for player in players:
         total_min += player[0]
+    min_ratio = rem_min / total_min
 
-    min_ratio = 5 * 48 / total_min
-
-    unmod_players = []
+    adj_players = []
+    not_adj_players = []
     for player in players:
-        if player[0] * min_ratio > 48:
-            min_ratio = 48 / player[0]
+        if player[0] * min_ratio > 40:
+            min_ratio = 40 / player[0]
             for index in edit_stat_indexes:
                 player[index] = player[index] * min_ratio
             overflow = True
+            adj_players.append(player)
         else:
-            unmod_players.append(player)
+            not_adj_players.append(player)
 
     if not overflow:
         for player in players:
             for index in edit_stat_indexes:
                 player[index] = player[index] * min_ratio
-
     else:
-        calc_stats(unmod_players)
+        adj_min = 0
+        for player in adj_players:
+            adj_min += player[0]
+        calc_stats(not_adj_players, rem_min - adj_min)
 
 
 # finds all games on a specific day and returns a JSON containing info of all games on that day
@@ -247,6 +249,7 @@ def export_data(game_day_matrix, filename):
 
 def collect_data(date_range, filename):
     try:
+
         start_month = date_range[0].month
         start_year = date_range[0].year
         changed_season = True
@@ -298,8 +301,9 @@ def collect_data(date_range, filename):
     except KeyboardInterrupt:
         exit()
 
-# csv_filename = "Data/15-16.csv"
-# start_date = datetime.datetime(2015, 10, 10)
-# end_date = datetime.datetime(2016, 6, 18)
-# date_list = pd.date_range(start_date, end_date)
-# collect_data(date_list, csv_filename)
+
+csv_filename = "Data/20-21.csv"
+start_date = datetime.datetime(2020, 12, 21)
+end_date = datetime.datetime(2021, 5, 20)
+date_list = pd.date_range(start_date, end_date)
+collect_data(date_list, csv_filename)

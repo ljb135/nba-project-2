@@ -109,11 +109,11 @@ class Team:
         self.pf = round(total_pf, 2)
 
         # calculate offensive/defensive rating
-        min_weights = np.array(self.players_stats)[0]
-        off_rtg = np.array(self.players_stats)[15]
-        def_rtg = np.array(self.players_stats)[16]
-        self.off_rtg = np.average(off_rtg, weights=min_weights)
-        self.def_rtg = np.average(def_rtg, weights=min_weights)
+        min_weights = [row[0] for row in self.players_stats]
+        off_rtg = [row[15] for row in self.players_stats]
+        def_rtg = [row[16] for row in self.players_stats]
+        self.off_rtg = round(np.average(off_rtg, weights=min_weights), 2)
+        self.def_rtg = round(np.average(def_rtg, weights=min_weights), 2)
 
     def export(self):
         return [self.pts, self.ts_pct, self.fta, self.ft_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.oreb,
