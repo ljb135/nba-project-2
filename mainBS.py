@@ -8,22 +8,23 @@ from Data_Collection import Team  # change this
 # WebApp configuration and file paths
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
-db = create_engine('sqlite:///NBAPlayers.db', echo=False)
+db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 meta = MetaData()
 Pkl_Filename = "NBA_LRModel.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 
 # Table format from database
-players = Table('v_players', meta,
+players = Table('v_players2', meta,
                 Column('NAME', String),
                 Column('PLAYER_ID', String, primary_key=True),
-                Column('TEAM', String),
+                Column('TEAM_ABR', String),
                 Column('TEAM_ID', String),
                 Column('YEAR', String, primary_key=True),
                 Column('AGE', Integer),
                 Column('HEIGHT', Integer),
                 Column('WEIGHT', Integer),
+                Column('GP', Integer),
                 Column('MIN', Integer),
                 Column('PTS', Integer),
                 Column('FTM', Integer),
@@ -42,6 +43,17 @@ players = Table('v_players', meta,
                 Column('OREB', Integer),
                 Column('DREB', Integer),
                 Column('PF', Integer),
+                Column('OFF_RTG', Integer),
+                Column('DEF_RTG', Integer),
+                Column('DEFL', Integer),
+                Column('LB_REC', Integer),
+                Column('CONT_2P', Integer),
+                Column('CONT_3P', Integer),
+                Column('DFG2M', Integer),
+                Column('DFG2A', Integer),
+                Column('DFG3M', Integer),
+                Column('DFG3A', Integer),
+                Column('INJ', Integer),
                 Column('TEAM_NAME', String))
 
 
@@ -125,18 +137,17 @@ def form_page():
     for away_player in form.away_players:
         away_player.player.choices = player_choices
 
-    if request.method == "POST":
-        if form.validate_on_submit():
-            season = form.season.data
-            home_players = form.home_players.data
-            away_players = form.away_players.data
+    if request.method == "POST" and form.validate_on_submit():
+        season = form.season.data
+        home_players = form.home_players.data
+        away_players = form.away_players.data
 
-            stats = np.array([get_stats(season, home_players, away_players)])
-            print("Home: ", stats[0][0:13])
-            print("Away: ", stats[0][13:])
-            prediction = model.predict_proba(stats)
-            message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
-            flash(message)
+        stats = np.array([get_stats(season, home_players, away_players)])
+        print("Home: ", stats[0][0:13])
+        print("Away: ", stats[0][13:])
+        prediction = model.predict_proba(stats)
+        message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
+        flash(message)
 
     return render_template('formBS.html', title='Form', form=form)
 
@@ -153,10 +164,10 @@ def about_page():
     return render_template('aboutBS.html', title='About Us')
 
 
-# Queries database for list of players given the year - returns a JSON dictionary of objects containing player name and ID
+# Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
-    query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(players.c.YEAR == year)
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(players.c.YEAR == year)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -164,25 +175,7 @@ def playerlist(year):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM
-        playerObj["playerID"] = player.PLAYER_ID
-        player_array.append(playerObj)
-
-    return jsonify({"players": player_array})
-
-
-# Queries database for list of players given the team and year - returns a JSON dictionary of objects containing player name and ID
-@app.route('/autofill/<year>/<team_id>')
-def autofill(year, team_id):
-    query = select([players.c.PLAYER_ID, players.c.TEAM, players.c.NAME]).where(and_(players.c.YEAR == year, players.c.TEAM_ID == team_id)).order_by(players.c.MIN.desc()).limit(8)
-    conn = db.connect()
-    result = conn.execute(query)
-
-    player_array = []
-
-    for player in result:
-        playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM
+        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
         playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
@@ -192,7 +185,8 @@ def autofill(year, team_id):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct().order_by(players.c.TEAM_NAME)
+    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct().order_by(
+        players.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -205,6 +199,26 @@ def teamlist(year):
         team_array.append(teamObj)
 
     return jsonify({"teams": team_array})
+
+
+# Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
+@app.route('/autofill/<year>/<team_id>')
+def autofill(year, team_id):
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(
+        and_(players.c.YEAR == year, players.c.TEAM_ID == team_id, players.c.GP > 30, players.c.INJ == 0)).order_by(
+        (players.c.MIN).desc()).limit(8)
+    conn = db.connect()
+    result = conn.execute(query)
+
+    player_array = []
+
+    for player in result:
+        playerObj = {}
+        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
+        playerObj["playerID"] = player.PLAYER_ID
+        player_array.append(playerObj)
+
+    return jsonify({"players": player_array})
 
 
 if __name__ == '__main__':

@@ -16,10 +16,10 @@ class PlayerForm(Form):
 # User entry form for entering players on home/away teams
 class PlayerSelectionForm(FlaskForm):
     year_options = [("Default", "Select Season")]
-    for i in range(2015, 2020):
-        year_options.append((str(i), f"{i}-{i + 1}"))
+    for i in range(2017, 2022):
+        year_options.append((str(i), f"{i - 1}-{i}"))
 
-    season = NonValidatingSelectField('Season', choices=year_options, default=2020)
+    season = NonValidatingSelectField('Season', choices=year_options)
     home_team = NonValidatingSelectField('Home_Team', choices=[("Default", "No Team Selected")])
     away_team = NonValidatingSelectField('Away_Team', choices=[("Default", "No Team Selected")])
     home_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8)

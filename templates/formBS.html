@@ -87,12 +87,12 @@ const prediction_container = document.getElementById("prediction");
 
 function update_seasonHTML(selected_season, season_field) {
     let season_optionHTML = "<option value=Default>Select Season</option>";
-    for (let i = 2015; i < 2020; i++) {
+    for (let i = 2017; i < 2022; i++) {
         if (i.toString() == selected_season) {
-            season_optionHTML += "<option value=" + i.toString() + " selected>" + i.toString() + "-" + (i + 1).toString() + "</option>";
+            season_optionHTML += "<option value=" + i.toString() + " selected>" + (i - 1).toString() + "-" + i.toString() + "</option>";
         }
         else{
-            season_optionHTML += "<option value=" + i.toString() + ">" + i.toString() + "-" + (i + 1).toString() + "</option>";
+            season_optionHTML += "<option value=" + i.toString() + ">" + (i - 1).toString() + "-" + i.toString() + "</option>";
         }
     }
     season_field.innerHTML = season_optionHTML;

@@ -37,19 +37,14 @@ players2 = Table('players2', meta,
                  Column('PF', Integer),
                  Column('OFF_RTG', Integer),
                  Column('DEF_RTG', Integer),
-                 # Hustle
                  Column('DEFL', Integer),
                  Column('LB_REC', Integer),
                  Column('CONT_2P', Integer),
                  Column('CONT_3P', Integer),
-                 # Defense Dashboard 2PT
                  Column('DFG2M', Integer),
                  Column('DFG2A', Integer),
-                 # Defense Dashboard 3PT
                  Column('DFG3M', Integer),
                  Column('DFG3A', Integer))
-
-
 # meta.create_all(db)
 
 # teams = Table('teams', meta,
@@ -61,7 +56,7 @@ players2 = Table('players2', meta,
 
 
 def get_seasonal_stats(season):
-    param = f"{season}-{str((season + 1) % 100).zfill(2)}"
+    param = f"{season - 1}-{str((season) % 100).zfill(2)}"
     season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
@@ -77,7 +72,7 @@ def get_seasonal_stats(season):
 
     season_stats = {}
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
+        if player[1] is None or player[5] <= 5:
             continue
         player_name = str(player[1])
         del player[30:]
@@ -217,49 +212,51 @@ def get_seasonal_stats(season):
 
     return season_stats
 
-for year in range(2020, 2021):
-    print(f"starting {year}")
-    player_stats = get_seasonal_stats(year)
-    for player in player_stats:
-        stats = player_stats[player]
-        query = players2.insert().values(
-            NAME=stats[2],
-            PLAYER_ID=stats[1],
-            TEAM_ABR=stats[4],
-            TEAM_ID=stats[3],
-            YEAR=stats[0],
-            AGE=stats[5],
-            HEIGHT=stats[25],
-            WEIGHT=stats[26],
-            GP=stats[6],
-            MIN=stats[7],
-            PTS=stats[24],
-            FTM=stats[14],
-            FTA=stats[15],
-            FT_PCT=stats[16],
-            FGM=stats[8],
-            FGA=stats[9],
-            FG_PCT=stats[10],
-            FG3M=stats[11],
-            FG3A=stats[12],
-            FG3_PCT=stats[13],
-            AST=stats[19],
-            TOV=stats[20],
-            STL=stats[21],
-            BLK=stats[22],
-            OREB=stats[17],
-            DREB=stats[18],
-            PF=stats[23],
-            OFF_RTG=stats[27],
-            DEF_RTG=stats[28],
-            DEFL=stats[29],
-            LB_REC=stats[30],
-            CONT_2P=stats[31],
-            CONT_3P=stats[32],
-            DFG2M=stats[33],
-            DFG2A=stats[34],
-            DFG3M=stats[35],
-            DFG3A=stats[36])
-        print("running query")
-        conn = db.connect()
-        result = conn.execute(query)
+#
+# for year in range(2017, 2022):
+#     print(f"starting {year}")
+#     player_stats = get_seasonal_stats(year)
+#     for player in player_stats:
+#         stats = player_stats[player]
+#         if len(stats) == 37:
+#             query = players2.insert().values(
+#                 NAME=stats[2],
+#                 PLAYER_ID=stats[1],
+#                 TEAM_ABR=stats[4],
+#                 TEAM_ID=stats[3],
+#                 YEAR=stats[0],
+#                 AGE=stats[5],
+#                 HEIGHT=stats[25],
+#                 WEIGHT=stats[26],
+#                 GP=stats[6],
+#                 MIN=stats[7],
+#                 PTS=stats[24],
+#                 FTM=stats[14],
+#                 FTA=stats[15],
+#                 FT_PCT=stats[16],
+#                 FGM=stats[8],
+#                 FGA=stats[9],
+#                 FG_PCT=stats[10],
+#                 FG3M=stats[11],
+#                 FG3A=stats[12],
+#                 FG3_PCT=stats[13],
+#                 AST=stats[19],
+#                 TOV=stats[20],
+#                 STL=stats[21],
+#                 BLK=stats[22],
+#                 OREB=stats[17],
+#                 DREB=stats[18],
+#                 PF=stats[23],
+#                 OFF_RTG=stats[27],
+#                 DEF_RTG=stats[28],
+#                 DEFL=stats[29],
+#                 LB_REC=stats[30],
+#                 CONT_2P=stats[31],
+#                 CONT_3P=stats[32],
+#                 DFG2M=stats[33],
+#                 DFG2A=stats[34],
+#                 DFG3M=stats[35],
+#                 DFG3A=stats[36])
+#             print("running query")
+#             conn = db.connect()
+#             result = conn.execute(query)

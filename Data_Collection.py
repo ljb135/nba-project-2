@@ -13,15 +13,16 @@ db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
 conn = db.connect()
 
-players = Table('v_players', meta,
+players = Table('v_players2', meta,
                 Column('NAME', String),
                 Column('PLAYER_ID', String, primary_key=True),
-                Column('TEAM', String),
+                Column('TEAM_ABR', String),
                 Column('TEAM_ID', String),
                 Column('YEAR', String, primary_key=True),
                 Column('AGE', Integer),
                 Column('HEIGHT', Integer),
                 Column('WEIGHT', Integer),
+                Column('GP', Integer),
                 Column('MIN', Integer),
                 Column('PTS', Integer),
                 Column('FTM', Integer),
@@ -40,6 +41,17 @@ players = Table('v_players', meta,
                 Column('OREB', Integer),
                 Column('DREB', Integer),
                 Column('PF', Integer),
+                Column('OFF_RTG', Integer),
+                Column('DEF_RTG', Integer),
+                Column('DEFL', Integer),
+                Column('LB_REC', Integer),
+                Column('CONT_2P', Integer),
+                Column('CONT_3P', Integer),
+                Column('DFG2M', Integer),
+                Column('DFG2A', Integer),
+                Column('DFG3M', Integer),
+                Column('DFG3A', Integer),
+                Column('INJ', Integer),
                 Column('TEAM_NAME', String))
 
 
@@ -66,7 +78,6 @@ class Team:
 
     # calculates team stats using the player stats
     def __calculate(self):
-
         sum_stats = np.array(self.players_stats).sum(axis=0)
 
         total_pts = sum_stats[2]
@@ -87,19 +98,19 @@ class Team:
         self.pts = round(total_pts, 2)
 
         # calculate true shooting percentage
-        self.ts_pct = round(total_pts/(2*(total_fga + (0.44 * total_fta))), 3)
+        self.ts_pct = round(total_pts / (2 * (total_fga + (0.44 * total_fta))), 3)
 
         # calculate total free throw attempts
         self.fta = round(total_fta, 2)
 
         # calculate free throw percentage
-        self.ft_pct = round(total_ftm/total_fta, 3)
+        self.ft_pct = round(total_ftm / total_fta, 3)
 
         # calculate total three point attempts
         self.fg3a = round(total_3pa, 2)
 
         # calculate three point percentage
-        self.fg3_pct = round(total_3pm/total_3pa, 3)
+        self.fg3_pct = round(total_3pm / total_3pa, 3)
 
         # calculate total assists
         self.ast = round(total_ast, 2)
@@ -123,7 +134,8 @@ class Team:
         self.pf = round(total_pf, 2)
 
     def export(self):
-        return [self.pts, self.ts_pct, self.fta, self.ft_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.oreb, self.dreb, self.stl, self.blk, self.pf]
+        return [self.pts, self.ts_pct, self.fta, self.ft_pct, self.fg3a, self.fg3_pct, self.ast, self.tov, self.oreb,
+                self.dreb, self.stl, self.blk, self.pf]
 
 
 # used to store information regarding a single NBA Game
@@ -189,22 +201,26 @@ class NBAGame:
         result = conn.execute(query).fetchall()
         for player in result:
             player_stats = player.values()
-            del player_stats[6:8]
-            del player_stats[:5]
+            delete_indexes = [13, 16, 19, 37]
+            for index in sorted(delete_indexes, reverse=True):
+                del player_stats[index]
+            del player_stats[:9]
             self.home_players.append(player_stats)
 
         query = select([players]).where(and_(players.c.YEAR == self.season, players.c.PLAYER_ID.in_(away_player_ids)))
         result = conn.execute(query).fetchall()
         for player in result:
             player_stats = player.values()
-            del player_stats[6:8]
-            del player_stats[:5]
+            delete_indexes = [13, 16, 19, 37]
+            for index in sorted(delete_indexes, reverse=True):
+                del player_stats[index]
+            del player_stats[:9]
             self.away_players.append(player_stats)
 
         # filter home and away players to the eight with the most minutes
-        self.home_players.sort(key=lambda x: x[1], reverse=True)
+        self.home_players.sort(key=lambda x: x[0], reverse=True)
         del self.home_players[8:]
-        self.away_players.sort(key=lambda x: x[1], reverse=True)
+        self.away_players.sort(key=lambda x: x[0], reverse=True)
         del self.away_players[8:]
 
     # compares scores and determines which team won
@@ -231,18 +247,18 @@ class NBAGame:
         away_total_min = 0
 
         for player in self.home_players:
-            home_total_min += player[1]
+            home_total_min += player[0]
         for player in self.away_players:
-            away_total_min += player[1]
+            away_total_min += player[0]
 
         if len(self.home_players) < 5:
-            home_min_ratio = len(self.home_players)*48/home_total_min
+            home_min_ratio = len(self.home_players) * 48 / home_total_min
         else:
-            home_min_ratio = 5*48/home_total_min
+            home_min_ratio = 5 * 48 / home_total_min
         if len(self.away_players) < 5:
-            away_min_ratio = len(self.away_players)*48/away_total_min
+            away_min_ratio = len(self.away_players) * 48 / away_total_min
         else:
-            away_min_ratio = 5*48/away_total_min
+            away_min_ratio = 5 * 48 / away_total_min
 
         # loops through all players on both teams and edits stats using minutes ratio
         for player_number in range(len(self.home_players)):
@@ -262,7 +278,10 @@ class NBAGame:
 def games_on_date(month, day, year):
     day = f"{month}%2F{day}%2F{year}"
     game_id_url = f"https://stats.nba.com/stats/scoreboardV2?DayOffset=0&LeagueID=00&gameDate={day}"
-    game_id_headers = {"Host": "stats.nba.com", "Connection": "keep-alive", "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
+    game_id_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
+                       "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
+                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
+                       "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
 
     req = urllib.request.Request(url=game_id_url, headers=game_id_headers)
     response = urllib.request.urlopen(req)
@@ -284,7 +303,11 @@ def get_game_ids(gameday_json):
 # finds box score information of a specific game and a JSON containing detailed stats of players in the game
 def stats_in_game(game_id):
     game_stats_url = f"https://stats.nba.com/stats/boxscoretraditionalv2?EndPeriod=10&EndRange=28800&GameID={game_id}&RangeType=0&StartPeriod=1&StartRange=0"
-    game_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive", "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "Referer": f"https://stats.nba.com/game/{game_id}/", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
+    game_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
+                          "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
+                          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
+                          "Referer": f"https://stats.nba.com/game/{game_id}/", "Accept-Encoding": "gzip, deflate, br",
+                          "Accept-Language": "en-US,en;q=0.9"}
 
     req = urllib.request.Request(url=game_stats_url, headers=game_stats_headers)
     response = urllib.request.urlopen(req)
@@ -307,17 +330,17 @@ def collect_data(date_range, filename):
         start_year = date_range[0].year
         changed_season = True
 
-        if start_month > 4:
-            season = start_year
+        if start_month > 5:
+            season = start_year + 1
         else:
-            season = start_year - 1
+            season = start_year
 
         for date in date_range:
             year = date.year
             month = date.month
             day = date.day
 
-            if month in range(5, 10):
+            if month in range(6, 10):
                 continue
 
             if month == 10 and changed_season is False:
@@ -353,7 +376,6 @@ def collect_data(date_range, filename):
                     raise
     except KeyboardInterrupt:
         exit()
-
 
 # csv_filename = "Data/15-16.csv"
 # start_date = datetime.datetime(2015, 10, 10)
