@@ -5,12 +5,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 import pickle
 
+
 def make_model(data):
-    y = data.result.copy()
-    X = data.drop(['game_id', 'result'], axis=1)
+    y = data.win_result.copy()
+    X = data.drop(['game_id', 'win_result'], axis=1)
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=True)
 
-    model = LogisticRegression(max_iter=2500, penalty='l2', C=0.615848211066026)
+    # model = LogisticRegression(max_iter=2500, penalty='l2', C=0.615848211066026)
+    model = LogisticRegression(max_iter=250)
     model.fit(x_train, y_train)
 
     # # Create regularization penalty space
@@ -45,10 +47,10 @@ def make_model(data):
 
 
 training_data = pd.read_csv("Data/training_data.csv")
-training_data.columns = ["game_id", "result", "home_pts", "home_ts_pct", "home_fta", "home_ft_pct", "home_fg3a", "home_fg3_pct", "home_ast", "home_tov", "home_oreb", "home_dreb", "home_stl", "home_blk", "home_pf", "away_pts", "away_ts_pct", "away_fta", "away_ft_pct", "away_fg3a", "away_fg3_pct", "away_ast", "away_tov", "away_oreb", "away_dreb", "away_stl", "away_blk", "away_pf"]
+training_data.columns = ["game_id", "win_result", "home_pts", "home_ ts_pct", "home.fta", "home.ft_pct", "home.fg3a", "home.fg3_pct", "home.ast", "home.tov", "home.oreb", "home.dreb", "home.stl", "home.blk", "home.defl", "home.lb_rec", "home.cont_2", "home.cont_3", "home.defg_pct", "home.off_rtg", "home.def_rtg", "home.pf", "away_pts", "away_ ts_pct", "away.fta", "away.ft_pct", "away.fg3a", "away.fg3_pct", "away.ast", "away.tov", "away.oreb", "away.dreb", "away.stl", "away.blk", "away.defl", "away.lb_rec", "away.cont_2", "away.cont_3", "away.defg_pct", "away.off_rtg", "away.def_rtg", "away.pf"]
 LRmodel = make_model(training_data)
 
-Pkl_Filename = "NBA_LRModel.pkl"
+Pkl_Filename = "NBA_LRModel2.pkl"
 with open(Pkl_Filename, 'wb') as file:
     pickle.dump(LRmodel, file)
 

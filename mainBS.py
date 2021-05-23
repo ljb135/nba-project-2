@@ -3,14 +3,14 @@ from forms import PlayerSelectionForm
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
 import numpy as np
 import pickle
-import Team  # change this
+from Team import Team
 
 # WebApp configuration and file paths
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
 db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 meta = MetaData()
-Pkl_Filename = "NBA_LRModel.pkl"
+Pkl_Filename = "NBA_LRModel2.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 
@@ -154,16 +154,15 @@ def form_page():
         away_player.player.choices = player_choices
 
     if request.method == "POST" and form.validate_on_submit():
-        # season = form.season.data
-        # home_players = form.home_players.data
-        # away_players = form.away_players.data
-        #
-        # stats = np.array([get_stats(season, home_players, away_players)])
-        # print("Home: ", stats[0][0:13])
-        # print("Away: ", stats[0][13:])
-        # prediction = model.predict_proba(stats)
-        # message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
-        message = "The probability that the home team wins is 60%"
+        season = form.season.data
+        home_players = form.home_players.data
+        away_players = form.away_players.data
+
+        stats = np.array([get_stats(season, home_players, away_players)])
+        print("Home: ", stats[0][0:20])
+        print("Away: ", stats[0][20:])
+        prediction = model.predict_proba(stats)
+        message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
         flash(message)
 
     return render_template('formBS.html', title='Form', form=form)
