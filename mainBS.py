@@ -68,9 +68,10 @@ def get_stats(season, home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
-            del result[26]
-            del result[6:8]
-            del result[:5]
+            delete_indexes = [13, 16, 19, 37, 38]
+            for index in sorted(delete_indexes, reverse=True):
+                del result[index]
+            del result[:9]
             home_stats.append(result)
 
     away_stats = []
@@ -82,41 +83,56 @@ def get_stats(season, home_players, away_players):
             result = conn.execute(query)
 
             result = result.fetchone().values()
-            del result[26]
-            del result[6:8]
-            del result[:5]
+            delete_indexes = [13, 16, 19, 37, 38]
+            for index in sorted(delete_indexes, reverse=True):
+                del result[index]
+            del result[:9]
             away_stats.append(result)
 
     return np.array(stats_mod(home_stats, away_stats))
 
 
 def stats_mod(home_players, away_players):
-    game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
-    edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
-
-    home_total_min = 0
-    away_total_min = 0
-
-    for player in home_players:
-        home_total_min += player[1]
-    for player in away_players:
-        away_total_min += player[1]
-
-    home_min_ratio = 5*48/home_total_min
-    away_min_ratio = 5*48/away_total_min
-
-    # loops through all players on both teams and edits stats using minutes ratio
-    for player_number in range(len(home_players)):
-        for index in edit_stat_indexes:
-            home_players[player_number][index] = home_players[player_number][index] * home_min_ratio
-    for player_number in range(len(away_players)):
-        for index in edit_stat_indexes:
-            away_players[player_number][index] = away_players[player_number][index] * away_min_ratio
+    game_data_array = []
+    calc_stats(home_players, 240)
+    calc_stats(away_players, 240)
 
     game_data_array.extend(Team(home_players).export())
     game_data_array.extend(Team(away_players).export())
 
     return game_data_array
+
+
+def calc_stats(players, rem_min):
+    overflow = False
+    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]
+
+    total_min = 0
+    for player in players:
+        total_min += player[0]
+    min_ratio = rem_min / total_min
+
+    adj_players = []
+    not_adj_players = []
+    for player in players:
+        if player[0] * min_ratio > 40:
+            min_ratio = 40 / player[0]
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+            overflow = True
+            adj_players.append(player)
+        else:
+            not_adj_players.append(player)
+
+    if not overflow:
+        for player in players:
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+    else:
+        adj_min = 0
+        for player in adj_players:
+            adj_min += player[0]
+        calc_stats(not_adj_players, rem_min - adj_min)
 
 
 # Route for webapp homepage - contains form
@@ -138,15 +154,16 @@ def form_page():
         away_player.player.choices = player_choices
 
     if request.method == "POST" and form.validate_on_submit():
-        season = form.season.data
-        home_players = form.home_players.data
-        away_players = form.away_players.data
-
-        stats = np.array([get_stats(season, home_players, away_players)])
-        print("Home: ", stats[0][0:13])
-        print("Away: ", stats[0][13:])
-        prediction = model.predict_proba(stats)
-        message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
+        # season = form.season.data
+        # home_players = form.home_players.data
+        # away_players = form.away_players.data
+        #
+        # stats = np.array([get_stats(season, home_players, away_players)])
+        # print("Home: ", stats[0][0:13])
+        # print("Away: ", stats[0][13:])
+        # prediction = model.predict_proba(stats)
+        # message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
+        message = "The probability that the home team wins is 60%"
         flash(message)
 
     return render_template('formBS.html', title='Form', form=form)
