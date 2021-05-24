@@ -91,7 +91,6 @@ function delete_prediction() {
     }
 }
 function update_seasonHTML(selected_season, season_field) {
-    let season_optionHTML = "<option value=Default>Select Season</option>";
     for (let i = 2017; i < 2022; i++) {
         if (i.toString() == selected_season) {
             season_optionHTML += "<option value=" + i.toString() + " selected>" + (i - 1).toString() + "-" + i.toString() + "</option>";
@@ -104,49 +103,37 @@ function update_seasonHTML(selected_season, season_field) {
 }
 function update_playerHTML(selected_season, selected_player, player_field) {
     let player_optionHTML = "";
-    if (selected_season == "Default") {
-        player_optionHTML += "<option value=Default>Select Player</option>";
-        player_field.innerHTML = player_optionHTML;
-    }
-    else{
-        fetch("/playerlist/" + selected_season).then(function(response) {
-            response.json().then(function(data) {
-                player_optionHTML += "<option value=Default>Select Player</option>";
-                for(let player of data.players) {
-                    if (player.playerID.toString() == selected_player) {
-                        player_optionHTML += "<option value=" + player.playerID.toString() + " selected>" + player.name.toString() + "</option>";
-                    }
-                    else{
-                        player_optionHTML += "<option value=" + player.playerID.toString() + ">" + player.name.toString() + "</option>";
-                    }
+    fetch("/playerlist/" + selected_season).then(function(response) {
+        response.json().then(function(data) {
+            player_optionHTML += "<option value=Default>Select Player</option>";
+            for(let player of data.players) {
+                if (player.playerID.toString() == selected_player) {
+                    player_optionHTML += "<option value=" + player.playerID.toString() + " selected>" + player.name.toString() + "</option>";
                 }
-                player_field.innerHTML = player_optionHTML;
-            });
+                else{
+                    player_optionHTML += "<option value=" + player.playerID.toString() + ">" + player.name.toString() + "</option>";
+                }
+            }
+            player_field.innerHTML = player_optionHTML;
         });
-    }
+    });
 }
 function update_teamHTML(selected_season, selected_team, team_field) {
     let team_optionHTML = "";
-    if (selected_season == "Default") {
-        team_optionHTML += "<option value=Default>No Team Selected</option>";
-        team_field.innerHTML = team_optionHTML;
-    }
-    else{
-        fetch("/teamlist/" + selected_season).then(function(response) {
-            response.json().then(function(data) {
-                team_optionHTML += "<option value=Default>No Team Selected</option>";
-                for(let team of data.teams) {
-                    if (team.teamID.toString() == selected_team) {
-                        team_optionHTML += "<option value=" + team.teamID.toString() + " selected>" + team.name.toString() + "</option>";
-                    }
-                    else{
-                        team_optionHTML += "<option value=" + team.teamID.toString() + ">" + team.name.toString() + "</option>";
-                    }
+    fetch("/teamlist/" + selected_season).then(function(response) {
+        response.json().then(function(data) {
+            team_optionHTML += "<option value=Default>No Team Selected</option>";
+            for(let team of data.teams) {
+                if (team.teamID.toString() == selected_team) {
+                    team_optionHTML += "<option value=" + team.teamID.toString() + " selected>" + team.name.toString() + "</option>";
                 }
-                team_field.innerHTML = team_optionHTML;
-            });
+                else{
+                    team_optionHTML += "<option value=" + team.teamID.toString() + ">" + team.name.toString() + "</option>";
+                }
+            }
+            team_field.innerHTML = team_optionHTML;
         });
-    }
+    });
 }
 function season_change() {
     season_field.onchange = function() {
@@ -219,6 +206,7 @@ function player_change(player_field, team_field) {
         delete_prediction();
         sessionStorage.setItem(player_field.name, player_field.value);
         update_teamHTML(season_field.value, "Default", team_field);
+        sessionStorage.removeItem(team_field.name);
     };
 }
 function swap_teams_button_handler() {
@@ -346,7 +334,7 @@ for (let player_field of away_player_fields) {
 swap_teams_button_handler();
 clear_team_button_handler();
 page_reload();
-if ( window.history.replaceState ) {
+if (window.history.replaceState) {
   window.history.replaceState( null, null, window.location.href );
 }
 </script>

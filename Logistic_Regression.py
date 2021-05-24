@@ -12,7 +12,7 @@ def make_model(data):
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=True)
 
     # model = LogisticRegression(max_iter=2500, penalty='l2', C=0.615848211066026)
-    model = LogisticRegression(max_iter=250)
+    model = LogisticRegression(max_iter=2500)
     model.fit(x_train, y_train)
 
     # # Create regularization penalty space

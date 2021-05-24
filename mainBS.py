@@ -8,7 +8,7 @@ from Team import Team
 # WebApp configuration and file paths
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
-db = create_engine('sqlite:///NBAPlayers.db', echo=True)
+db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
 Pkl_Filename = "NBA_LRModel2.pkl"
 with open(Pkl_Filename, 'rb') as file:
@@ -146,12 +146,6 @@ def home_page():
 @app.route('/form', methods=('GET', 'POST'))
 def form_page():
     form = PlayerSelectionForm()
-
-    player_choices = [("Default", "Select Player")]
-    for home_player in form.home_players:
-        home_player.player.choices = player_choices
-    for away_player in form.away_players:
-        away_player.player.choices = player_choices
 
     if request.method == "POST" and form.validate_on_submit():
         season = form.season.data
