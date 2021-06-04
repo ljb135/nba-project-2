@@ -43,11 +43,20 @@ def make_model(data):
     print("F1:", metrics.f1_score(y_test, y_pred))
     print("AUC Score:", metrics.roc_auc_score(y_test, y_pred))
 
+    coefs = model.coef_[0]
+    print(pd.DataFrame(coefs, X.columns, columns=['coef']).sort_values(by='coef', ascending=False))
+
     return model
 
 
 training_data = pd.read_csv("Data/training_data.csv")
-training_data.columns = ["game_id", "win_result", "home_pts", "home_ ts_pct", "home.fta", "home.ft_pct", "home.fg3a", "home.fg3_pct", "home.ast", "home.tov", "home.oreb", "home.dreb", "home.stl", "home.blk", "home.defl", "home.lb_rec", "home.cont_2", "home.cont_3", "home.defg_pct", "home.off_rtg", "home.def_rtg", "home.pf", "away_pts", "away_ ts_pct", "away.fta", "away.ft_pct", "away.fg3a", "away.fg3_pct", "away.ast", "away.tov", "away.oreb", "away.dreb", "away.stl", "away.blk", "away.defl", "away.lb_rec", "away.cont_2", "away.cont_3", "away.defg_pct", "away.off_rtg", "away.def_rtg", "away.pf"]
+training_data.columns = ["game_id", "win_result", "home_pts", "home_ ts_pct", "home.fta", "home.ft_pct", "home.fg3a",
+                         "home.fg3_pct", "home.ast", "home.tov", "home.oreb", "home.dreb", "home.stl", "home.blk",
+                         "home.defl", "home.lb_rec", "home.cont_2", "home.cont_3", "home.defg_pct", "home.off_rtg",
+                         "home.def_rtg", "home.pf", "away_pts", "away_ts_pct", "away.fta", "away.ft_pct", "away.fg3a",
+                         "away.fg3_pct", "away.ast", "away.tov", "away.oreb", "away.dreb", "away.stl", "away.blk",
+                         "away.defl", "away.lb_rec", "away.cont_2", "away.cont_3", "away.defg_pct", "away.off_rtg",
+                         "away.def_rtg", "away.pf"]
 LRmodel = make_model(training_data)
 
 Pkl_Filename = "NBA_LRModel2.pkl"
@@ -55,4 +64,3 @@ with open(Pkl_Filename, 'wb') as file:
     pickle.dump(LRmodel, file)
 
 # Use (model.predict_proba(arr)[0][1]) to find the prob for a single game
-

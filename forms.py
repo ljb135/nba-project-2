@@ -79,7 +79,6 @@ class NonValidatingSelectField(SelectField):
 # Form for a single player to be duplicated in PlayerSelectionForm
 class PlayerForm(Form):
     player_options = playerlist()
-    print(player_options)
     player = NonValidatingSelectField('Player', validators=[NoneOf(values=["Default"], message="Please select a player.")], choices=player_options, default="Default")
 
 
