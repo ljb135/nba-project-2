@@ -65,7 +65,7 @@ def teamlist():
     conn = db.connect()
     result = conn.execute(query)
 
-    team_array = [("Default", "No Team Selected")]
+    team_array = [("Default", "Custom")]
     for team in result:
         team_array.append((team.TEAM_ID, team.TEAM_NAME))
     return team_array

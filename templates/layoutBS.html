@@ -17,21 +17,28 @@
         </button>
         <div class="collapse navbar-collapse" id="navbar">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="home">Home</a>
+                <li class="nav-item">
+                    <a id="/home" class="nav-link" href="home">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="form">Predict</a>
+                    <a id="/form" class="nav-link" href="form">Predict</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="model">Our Model</a>
+                    <a id="/model" class="nav-link" href="model">Our Model</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="about">About Us</a>
+                    <a id="/about" class="nav-link" href="about">About Us</a>
                 </li>
             </ul>
         </div>
     </nav>
     {% block content %} {% endblock content %}
 </body>
+<script>
+    if(window.location.pathname == "/"){
+        document.getElementById("/home").classList.add('active');
+    } else {
+        document.getElementById(window.location.pathname).classList.add('active');
+    }
+</script>
 </html>
