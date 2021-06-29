@@ -163,9 +163,9 @@ def form_page():
 
 
 # Route for background page
-@app.route('/model')
-def model_page():
-    return render_template('modelBS.html', title='Our Model')
+# @app.route('/model')
+# def model_page():
+#     return render_template('modelBS.html', title='Our Model')
 
 
 # Route for about us page
