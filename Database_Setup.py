@@ -72,7 +72,7 @@ def get_seasonal_stats(season):
 
     season_stats = {}
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None or player[5] <= 5:
+        if player[1] is None or player[6] <= 5:
             continue
         player_name = str(player[1])
         del player[30:]

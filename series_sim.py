@@ -160,8 +160,8 @@ def run_sim():
             return low_seed, i
 
 
-high_seed = "NYK"
-low_seed = "ATL"
+high_seed = "UTA"
+low_seed = "BKN"
 
 data_array = np.array([get_stats(high_seed, low_seed)])
 high_seed_prediction = model.predict_proba(data_array)

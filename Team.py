@@ -6,10 +6,12 @@ class Team:
     def __init__(self, players_stats):
         self.players_stats = players_stats
 
-        self.pts = None
-        self.ts_pct = None
+        # self.pts = None
+        # self.ts_pct = None
         self.fta = None
         self.ft_pct = None
+        self.fg2a = None
+        self.fg3a = None
         self.fg3a = None
         self.fg3_pct = None
         self.ast = None
@@ -18,8 +20,8 @@ class Team:
         self.dreb = None
         self.stl = None
         self.blk = None
-        self.defl = None
-        self.lb_rec = None
+        # self.defl = None
+        # self.lb_rec = None
         self.cont_2 = None
         self.cont_3 = None
         self.defg_pct = None

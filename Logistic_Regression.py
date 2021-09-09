@@ -11,12 +11,12 @@ def make_model(data):
     X = data.drop(['game_id', 'win_result'], axis=1)
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20, shuffle=True)
 
-    # model = LogisticRegression(max_iter=2500, penalty='l2', C=0.615848211066026)
-    model = LogisticRegression(max_iter=2500)
+    model = LogisticRegression(max_iter=2500, penalty='l2', C=0.0006951927961775605)
+    # model = LogisticRegression(max_iter=2500)
     model.fit(x_train, y_train)
 
     # # Create regularization penalty space
-    # penalty = ['none', 'l1', 'l2']
+    # penalty = ['l2']
     #
     # # Create regularization hyperparameter space
     # C = np.logspace(-4, 4, 20)

@@ -2,9 +2,9 @@
 
 {% block content %}
 
-<div id="hero" class="bg-image" style= "background-image: url('/static/NBA_background.png')">
+<div id="hero" class="bg-image" style= "background-image: url('/static/NBA_background.png'); background-size: cover">
   <div class="mask" style="background: linear-gradient(rgb(33 37 41), rgba(0, 0, 0, 0.5) 40%);">
-    <div class="row justify-content-center min-vh-100">
+    <div class="row justify-content-center min-vh-100" style="margin: auto;">
       <div class="col-10 col-md-8 my-auto text-light text-center">
         <h1 class="display-1">Welcome to <strong>NBA Predict</strong></h1>
         <h2><small>Enter two teams, either real or completely random, to see our model’s prediction for which team would win an NBA game!</small></h2>
@@ -81,29 +81,19 @@
   <div class="row justify-content-center pt-5 pb-5 text-light bg-dark">
     <div class="col-sm col-xxl-4 mb-3 align-self-center text-center">
       <div class="d-sm-none"><h5>2021 NBA Playoffs Prediction</h5></div>
-      <img src="/static/bracket.png" class="img-fluid rounded mx-auto d-block" alt="...">
-      <div class="d-none d-sm-block mt-2"><h5>2021 NBA Season Prediction</h5></div>
+      <img src="/static/bracket.jpeg" class="img-fluid rounded mx-auto d-block" alt="...">
+      <div class="d-none d-sm-block mt-2"><h5>2021 NBA Playoffs Prediction</h5></div>
     </div>
     <div class="col-sm col-xxl-4 align-self-center">
       <div class="row mt-2 mb-2">
         <h1><center>About</center></h1>
       </div>
-      <div class="row row-cols-1 row-cols-md-2 g-4">
+      <div class="row text-center row-cols-1 g-4">
         <div class="col">
           <div class="card bg-dark">
             <div class="card-body">
-              <h5 class="card-title">Our Model</h5>
-              <p class="card-text">See the process by which we collected our data and trained our machine learning model.</p>
-              <a href="model" class="btn btn-primary" style="margin-top: 5px;">Go</a>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card bg-dark">
-            <div class="card-body">
-              <h5 class="card-title">Who We Are</h5>
-              <p class="card-text">Learn more about the creators behind this page.</p>
-              <a href="about" class="btn btn-primary" style="margin-top: 5px;">Go</a>
+              <h5 class="card-text">Learn more about the creators behind this page. See the process by which we collected our data and trained our machine learning model.</h5>
+              <a href="about" class="btn btn-primary ps-4 pe-4" style="margin-top: 5px;">Go</a>
             </div>
           </div>
         </div>
