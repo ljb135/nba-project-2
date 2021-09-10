@@ -110,6 +110,7 @@ function delete_prediction() {
     }
 }
 function update_seasonHTML(selected_season, season_field) {
+    let season_optionHTML = "";
     for (let i = 2017; i < 2022; i++) {
         if (i.toString() == selected_season) {
             season_optionHTML += "<option value=" + i.toString() + " selected>" + (i - 1).toString() + "-" + i.toString() + "</option>";
