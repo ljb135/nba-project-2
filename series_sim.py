@@ -6,7 +6,7 @@ import random
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
-Pkl_Filename = "NBA_LRModel2.pkl"
+Pkl_Filename = "NBA_RFModel.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 

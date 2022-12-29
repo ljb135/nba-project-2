@@ -212,8 +212,9 @@ def get_seasonal_stats(season):
 
     return season_stats
 
-#
-# for year in range(2017, 2022):
+player_stats = get_seasonal_stats(2022)
+print(player_stats)
+# for year in range(2022, 2023):
 #     print(f"starting {year}")
 #     player_stats = get_seasonal_stats(year)
 #     for player in player_stats:

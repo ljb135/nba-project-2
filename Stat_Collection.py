@@ -67,7 +67,7 @@ def get_seasonal_stats(season):
     return season_stats
 
 
-get_seasonal_stats(2021)
+get_seasonal_stats(2022)
 
 # def create_table(keys):
 #     print(keys)

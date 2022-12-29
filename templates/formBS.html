@@ -4,31 +4,43 @@
 
 {% macro render_field(field) %}
     {{ field }}
-    {% if field.errors %}
-        {% for error in field.errors %}
-            <br><small id="error" class="form-text text-danger ">
-                {{ error }}
-            </small>
-        {% endfor %}
-    {% endif %}
 {% endmacro %}
 
 <div id="hero" class="bg-image bg-dark text-light" style= "background-image: url('/static/NBA_banner.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center 37%; height: 25vh; max-width: 100vw;
   max-height: 100vh;">
-    <div class="row mask pt-4 pb-4 h-100 align-items-center" style="background: linear-gradient(rgb(33 37 41), rgba(0, 0, 0, 0.6) 40%); margin: auto;">
-        <center>
-            <h1 class="display-3">Predict</h1>
-        </center>
+    <div class="row mask pt-4 pb-4 h-100 align-items-center text-center" style="background: linear-gradient(rgb(33 37 41), rgba(0, 0, 0, 0.6) 40%); margin: auto;">
+        <h1 class="display-3">Predict</h1>
     </div>
 </div>
 <div class="container-fluid bg-light min-h-100 pt-4">
-  <div class="card mx-auto my-auto w-75">
-    <div class="card-body">
-      <center>
-        See how your favorite team stacks up against their opponents in an upcoming game, or check out how a recent trade affects your team’s chances of winning!
-      </center>
+    <div class="mx-auto my-auto w-75">
+        <div class="card-group">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">1. Select a Season</h5>
+                    <p class="card-text">Choose which season's players and stats you would like to use.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h4 class= "card-title">2. Enter the Players</h5>
+                    <p class="card-text">Enter any 8 players on each team OR use the autofill dropdown to automatically fill in the players from the selected team.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">3. Predict the Game</h5>
+                    <p class="card-text">Click predict to see the likelihood that the home team wins.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">4. Repeat!</h5>
+                    <p class="card-text">Edit the teams or swap home/away and predict again.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
   <form id="form" method="POST" action="" role="form">
     {{ form.hidden_tag() }}
     <div class="row pt-4 pb-4 text-center justify-content-center">
@@ -47,10 +59,10 @@
               {% for home_player in form.home_players %}
               <div class="row">
                   <div class="col-1 text-end">
-                      <h4>{{ loop.index }}.</h4>
+                        <h4>{{ loop.index }}.</h4>
                   </div>
                   <div class="col">
-                      <h3>{{ render_field(home_player.player(class_="form-select")) }}</h3>
+                        <h3>{{ render_field(home_player.player(class_="form-select")) }}</h3>
                   </div>
               </div>
               {% endfor %}
@@ -305,36 +317,38 @@ function page_reload(){
         for(let element of form_elements) {
             element.disabled = true;
         }
-        if (sessionStorage[season_field.name]) {
-            let load_season = sessionStorage.getItem(season_field.name);
-            update_seasonHTML(load_season, season_field);
+        if (!sessionStorage[season_field.name]) {
+            let selected_season = season_field.value;
+            sessionStorage.setItem(season_field.name, selected_season);
+        }
+        let load_season = sessionStorage.getItem(season_field.name);
+        update_seasonHTML(load_season, season_field);
 
-            let load_home_team = "Default";
-            if (sessionStorage[home_team_field.name]) {
-                load_home_team = sessionStorage.getItem(home_team_field.name);
-            }
-            update_teamHTML(load_season, load_home_team, home_team_field);
+        let load_home_team = "Default";
+        if (sessionStorage[home_team_field.name]) {
+            load_home_team = sessionStorage.getItem(home_team_field.name);
+        }
+        update_teamHTML(load_season, load_home_team, home_team_field);
 
-            let load_away_team = "Default";
-            if (sessionStorage[away_team_field.name]) {
-                load_away_team = sessionStorage.getItem(away_team_field.name);
-            }
-            update_teamHTML(load_season, load_away_team, away_team_field);
+        let load_away_team = "Default";
+        if (sessionStorage[away_team_field.name]) {
+            load_away_team = sessionStorage.getItem(away_team_field.name);
+        }
+        update_teamHTML(load_season, load_away_team, away_team_field);
 
-            for (let player_field of home_player_fields) {
-                let load_home_player = "Default";
-                if (sessionStorage[player_field.name]) {
-                    load_home_player = sessionStorage.getItem(player_field.name);
-                }
-                update_playerHTML(load_season, load_home_player, player_field);
+        for (let player_field of home_player_fields) {
+            let load_home_player = "Default";
+            if (sessionStorage[player_field.name]) {
+                load_home_player = sessionStorage.getItem(player_field.name);
             }
-            for (let player_field of away_player_fields) {
-                let load_away_player = "Default";
-                if (sessionStorage[player_field.name]) {
-                    load_away_player = sessionStorage.getItem(player_field.name);
-                }
-                update_playerHTML(load_season, load_away_player, player_field);
+            update_playerHTML(load_season, load_home_player, player_field);
+        }
+        for (let player_field of away_player_fields) {
+            let load_away_player = "Default";
+            if (sessionStorage[player_field.name]) {
+                load_away_player = sessionStorage.getItem(player_field.name);
             }
+            update_playerHTML(load_season, load_away_player, player_field);
         }
         setTimeout(function() {
             for(let element of form_elements) {
