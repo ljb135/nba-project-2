@@ -45,6 +45,8 @@ players2 = Table('players2', meta,
                  Column('DFG2A', Integer),
                  Column('DFG3M', Integer),
                  Column('DFG3A', Integer))
+
+
 # meta.create_all(db)
 
 # teams = Table('teams', meta,
@@ -56,34 +58,15 @@ players2 = Table('players2', meta,
 
 
 def get_seasonal_stats(season):
-    param = f"{season - 1}-{str((season) % 100).zfill(2)}"
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
-    season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
-                            "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
-                            "Referer": "https://stats.nba.com/players/traditional/?sort=PTS&dir=-1",
-                            "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
-
-    req = urllib.request.Request(url=season_stats_url, headers=season_stats_headers)
-    response = urllib.request.urlopen(req)
-    data = response.read()
-    data = str(gzip.decompress(data), 'utf-8')
-    json_file = json.loads(data)
-
     season_stats = {}
-    for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None or player[6] <= 5:
-            continue
-        player_name = str(player[1])
-        del player[30:]
-        delete_indexes = [6, 7, 8, 21, 26, 28]
-        for index in sorted(delete_indexes, reverse=True):
-            del player[index]
-        player[0] = str(player[0])
-        player[2] = str(player[2])
-        season_stats[player_name] = [str(season)] + player
 
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerbiostats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight="
+    param = f"{season - 1}-{str((season) % 100).zfill(2)}"
+    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0" \
+                       f"&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N" \
+                       f"&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench" \
+                       f"=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
@@ -96,21 +79,25 @@ def get_seasonal_stats(season):
     data = str(gzip.decompress(data), 'utf-8')
     json_file = json.loads(data)
 
-    for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
-            continue
-        player_name = str(player[1])
-        del player[8:]
-        del player[0: 6]
-        try:
-            player[1] = int(player[1])
-            season_stats[player_name] = season_stats[player_name] + player
-        except Exception:
-            if player_name in season_stats:
-                del season_stats[player_name]
-            continue
+    stat_fields = {'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATION', 'AGE', 'GP', 'MIN', 'FGM', 'FGA',
+                   'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV',
+                   'STL', 'BLK', 'PF', 'PFD', 'PTS', 'PLUS_MINUS'}
 
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
+    for player in json_file["resultSets"][0]["rowSet"]:
+        if player[stat_indexes["PLAYER_NAME"]] is None or player[stat_indexes["MIN"]] * player[stat_indexes["GP"]] < 100:
+            continue
+        player_id = player[stat_indexes["PLAYER_ID"]]
+        season_stats[player_id] = [str(season)] + [player[i] for i in list(stat_indexes.values())]
+
+    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerbiostats?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0" \
+                       f"&PlayerExperience=&PlayerPosition=&Season=" \
+                       f"{param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0" \
+                       f"&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
@@ -123,19 +110,27 @@ def get_seasonal_stats(season):
     data = str(gzip.decompress(data), 'utf-8')
     json_file = json.loads(data)
 
-    for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
-            continue
-        player_name = str(player[1])
-        player = [player[11], player[14]]
-        try:
-            season_stats[player_name] = season_stats[player_name] + player
-        except Exception:
-            if player_name in season_stats:
-                del season_stats[player_name]
-            continue
+    stat_fields = {'PLAYER_ID', 'PLAYER_HEIGHT_INCHES', 'PLAYER_WEIGHT', 'DRAFT_YEAR', 'DRAFT_ROUND', 'DRAFT_NUMBER'}
 
-    season_stats_url = f"https://stats.nba.com/stats/leaguehustlestatsplayer?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
+    for player in json_file["resultSets"][0]["rowSet"]:
+        if player[stat_indexes['PLAYER_ID']] is None:
+            continue
+        player_id = player[stat_indexes["PLAYER_ID"]]
+        try:
+            season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
+        except Exception:
+            if player_id in season_stats:
+                del season_stats[player_id]
+
+    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0" \
+                       f"&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N" \
+                       f"&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench" \
+                       f"=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
@@ -148,19 +143,28 @@ def get_seasonal_stats(season):
     data = str(gzip.decompress(data), 'utf-8')
     json_file = json.loads(data)
 
-    for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
-            continue
-        player_name = str(player[1])
-        player = [player[10], player[16], player[8], player[9]]
-        try:
-            season_stats[player_name] = season_stats[player_name] + player
-        except Exception:
-            if player_name in season_stats:
-                del season_stats[player_name]
-            continue
+    stat_fields = {'PLAYER_ID', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'AST_PCT', 'AST_TO', 'AST_RATIO', 'OREB_PCT',
+                   'DREB_PCT', 'REB_PCT', 'TM_TOV_PCT', 'EFG_PCT', 'TS_PCT', 'USG_PCT', 'PACE', 'PIE', 'POSS'}
 
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashptdefend?College=&Conference=&Country=&DateFrom=&DateTo=&DefenseCategory=2+Pointers&Division=&DraftPick=&DraftYear=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&Season={param}&SeasonSegment=&SeasonType=Regular+Season&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight="
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
+    for player in json_file["resultSets"][0]["rowSet"]:
+        if player[stat_indexes['PLAYER_ID']] is None:
+            continue
+        player_id = player[stat_indexes["PLAYER_ID"]]
+        try:
+            season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
+        except Exception:
+            if player_id in season_stats:
+                del season_stats[player_id]
+
+    season_stats_url = f"https://stats.nba.com/stats/leaguehustlestatsplayer?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0" \
+                       f"&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N" \
+                       f"&Season={param}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench" \
+                       f"=&TeamID=0&TwoWay=0&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
@@ -173,19 +177,27 @@ def get_seasonal_stats(season):
     data = str(gzip.decompress(data), 'utf-8')
     json_file = json.loads(data)
 
-    for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
-            continue
-        player_name = str(player[1])
-        player = [player[9], player[10]]
-        try:
-            season_stats[player_name] = season_stats[player_name] + player
-        except Exception:
-            if player_name in season_stats:
-                del season_stats[player_name]
-            continue
+    stat_fields = {'PLAYER_ID', 'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS'}
 
-    season_stats_url = f"https://stats.nba.com/stats/leaguedashptdefend?College=&Conference=&Country=&DateFrom=&DateTo=&DefenseCategory=3+Pointers&Division=&DraftPick=&DraftYear=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&Season={param}&SeasonSegment=&SeasonType=Regular+Season&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight="
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
+    for player in json_file["resultSets"][0]["rowSet"]:
+        if player[stat_indexes['PLAYER_ID']] is None:
+            continue
+        player_id = player[stat_indexes["PLAYER_ID"]]
+        try:
+            season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
+        except Exception:
+            if player_id in season_stats:
+                del season_stats[player_id]
+
+    season_stats_url = f"https://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&MeasureType=Misc&Month=0&OpponentTeamID=0&Outcome=&PORound=0" \
+                       f"&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N" \
+                       f"&Season={param}&SeasonSegment=&SeasonType=Regular%20Season&ShotClockRange=&StarterBench" \
+                       f"=&TeamID=0&VsConference=&VsDivision=&Weight="
     season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
                             "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
@@ -198,22 +210,69 @@ def get_seasonal_stats(season):
     data = str(gzip.decompress(data), 'utf-8')
     json_file = json.loads(data)
 
+    stat_fields = {'PLAYER_ID', 'PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT', 'OPP_PTS_OFF_TOV',
+                   'OPP_PTS_2ND_CHANCE', 'OPP_PTS_FB', 'OPP_PTS_PAINT'}
+
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[1] is None:
+        if player[stat_indexes['PLAYER_ID']] is None:
             continue
-        player_name = str(player[1])
-        player = [player[9], player[10]]
+        player_id = player[stat_indexes["PLAYER_ID"]]
         try:
-            season_stats[player_name] = season_stats[player_name] + player
+            season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
         except Exception:
-            if player_name in season_stats:
-                del season_stats[player_name]
+            if player_id in season_stats:
+                del season_stats[player_id]
+
+    season_stats_url = f"https://stats.nba.com/stats/leagueplayerondetails?College=&Conference=&Country=&DateFrom" \
+                       f"=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0" \
+                       f"&LeagueID=00&Location=&MeasureType=Opponent&Month=0&OpponentTeamID=0&Outcome=&PORound=0" \
+                       f"&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N" \
+                       f"&Season={param}&SeasonSegment=&SeasonType=Regular%20Season&ShotClockRange=&StarterBench" \
+                       f"=&TeamID=0&VsConference=&VsDivision=&Weight="
+    season_stats_headers = {"Host": "stats.nba.com", "Connection": "keep-alive",
+                            "Accept": "application/json, text/plain, */*", "x-nba-stats-origin": "stats",
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36",
+                            "Referer": "https://stats.nba.com/players/traditional/?sort=PTS&dir=-1",
+                            "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "en-US,en;q=0.9"}
+
+    req = urllib.request.Request(url=season_stats_url, headers=season_stats_headers)
+    response = urllib.request.urlopen(req)
+    data = response.read()
+    data = str(gzip.decompress(data), 'utf-8')
+    json_file = json.loads(data)
+
+    stat_fields = {"VS_PLAYER_ID", 'OPP_FGM', 'OPP_FGA', 'OPP_FG_PCT', 'OPP_FG3M', 'OPP_FG3A', 'OPP_FG3_PCT'}
+
+    headers = json_file["resultSets"][0]["headers"]
+    stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+
+    for player in json_file["resultSets"][0]["rowSet"]:
+        if player[stat_indexes['VS_PLAYER_ID']] is None:
             continue
+        player_id = player[stat_indexes["VS_PLAYER_ID"]]
+        try:
+            season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
+        except Exception:
+            if player_id in season_stats:
+                del season_stats[player_id]
 
     return season_stats
 
+test_keys = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATION', 'AGE', 'GP', 'MIN', 'FGM', 'FGA',
+                   'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV',
+                   'STL', 'BLK', 'PF', 'PFD', 'PTS', 'PLUS_MINUS', 'PLAYER_HEIGHT_INCHES', 'PLAYER_WEIGHT', 'DRAFT_YEAR', 'DRAFT_ROUND', 'DRAFT_NUMBER',
+             'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'AST_PCT', 'AST_TO', 'AST_RATIO', 'OREB_PCT',
+             'DREB_PCT', 'REB_PCT', 'TM_TOV_PCT', 'EFG_PCT', 'TS_PCT', 'USG_PCT', 'PACE', 'PIE', 'POSS',
+             'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT', 'OPP_PTS_OFF_TOV',
+                   'OPP_PTS_2ND_CHANCE', 'OPP_PTS_FB', 'OPP_PTS_PAINT', 'OPP_FGM', 'OPP_FGA', 'OPP_FG_PCT', 'OPP_FG3M', 'OPP_FG3A', 'OPP_FG3_PCT']
+
 player_stats = get_seasonal_stats(2022)
-print(player_stats)
+print(len(player_stats[203932]))
+print(dict(zip(test_keys, player_stats[203932])))
+
 # for year in range(2022, 2023):
 #     print(f"starting {year}")
 #     player_stats = get_seasonal_stats(year)
