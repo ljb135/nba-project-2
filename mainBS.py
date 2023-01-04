@@ -103,17 +103,16 @@ def get_stats(season, home_players, away_players):
     away_stats = []
     for player in away_players:
         player_id = player["player"]
-        if player_id != "Default":
-            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
-            conn = db.connect()
-            result = conn.execute(query)
+        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        conn = db.connect()
+        result = conn.execute(query)
 
-            result = result.fetchone().values()
-            delete_indexes = [13, 16, 19, 37, 38]
-            for index in sorted(delete_indexes, reverse=True):
-                del result[index]
-            del result[:9]
-            away_stats.append(result)
+        result = result.fetchone().values()
+        delete_indexes = [13, 16, 19, 37, 38]
+        for index in sorted(delete_indexes, reverse=True):
+            del result[index]
+        del result[:9]
+        away_stats.append(result)
 
     return np.array(stats_mod(home_stats, away_stats))
 
