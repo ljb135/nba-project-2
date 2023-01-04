@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, 
 db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 meta = MetaData()
 
-players = Table('v_players3', meta,
+players = Table('players3', meta,
                  Column('PLAYER_NAME', String),
                  Column('PLAYER_ID', String, primary_key=True),
                  Column('TEAM_ID', String),
@@ -72,8 +72,7 @@ players = Table('v_players3', meta,
                  Column('OPP_FG_PCT', Integer),
                  Column('OPP_FG3M', Integer),
                  Column('OPP_FG3A', Integer),
-                 Column('OPP_FG3_PCT', Integer),
-                 Column('TEAM_NAME', String))
+                 Column('OPP_FG3_PCT', Integer))
 
 # meta.create_all(db)
 
@@ -301,7 +300,7 @@ stat_names = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATIO
 # print(len(player_stats[203932]))
 # print(dict(zip(test_keys, player_stats[203932])))
 
-for year in range(2022, 2023):
+for year in range(2020, 2022):
     print(f"starting {year}")
     player_stats = get_seasonal_stats(year)
     for player in player_stats:
