@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request, flash, send_from_dir
 from forms import PlayerSelectionForm
 import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
-from Data_Collection import Team
+from ML_Models.ML_Data_Collection import Team
 import pickle
 
 # WebApp configuration and file paths
