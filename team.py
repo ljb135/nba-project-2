@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # converts a list of players stats into team stats
 class Team:
     def __init__(self, players_stats):

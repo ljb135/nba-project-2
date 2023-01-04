@@ -1,6 +1,6 @@
 import urllib.request
 from urllib.error import HTTPError
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_, text
+from sqlalchemy import create_engine
 import datetime
 import gzip
 import json
@@ -8,78 +8,13 @@ import csv
 from team import Team
 import re
 import pandas as pd
+from Players_Schema import Players_Table
+
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
-meta = MetaData()
+players = Players_Table.__table__
 conn = db.connect()
 
-players = Table('v_players3', meta,
-                 Column('PLAYER_NAME', String),
-                 Column('PLAYER_ID', String, primary_key=True),
-                 Column('TEAM_ID', String),
-                 Column('TEAM_ABBREVIATION', String),
-                 Column('SEASON', String, primary_key=True),
-                 Column('AGE', Integer),
-                 Column('PLAYER_HEIGHT_INCHES', Integer),
-                 Column('PLAYER_WEIGHT', Integer),
-                 Column('DRAFT_YEAR', String),
-                 Column('DRAFT_ROUND', Integer),
-                 Column('DRAFT_NUMBER', Integer),
-                 Column('GP', Integer),
-                 Column('MIN', Integer),
-                 Column('PTS', Integer),
-                 Column('EFG_PCT', Integer),
-                 Column('TS_PCT', Integer),
-                 Column('FGM', Integer),
-                 Column('FGA', Integer),
-                 Column('FG_PCT', Integer),
-                 Column('FG3M', Integer),
-                 Column('FG3A', Integer),
-                 Column('FG3_PCT', Integer),
-                 Column('FTM', Integer),
-                 Column('FTA', Integer),
-                 Column('FT_PCT', Integer),
-                 Column('OREB', Integer),
-                 Column('DREB', Integer),
-                 Column('REB', Integer),
-                 Column('AST', Integer),
-                 Column('TOV', Integer),
-                 Column('STL', Integer),
-                 Column('BLK', Integer),
-                 Column('PF', Integer),
-                 Column('PFD', Integer),
-                 Column('PLUS_MINUS', Integer),
-                 Column('OFF_RATING', Integer),
-                 Column('DEF_RATING', Integer),
-                 Column('NET_RATING', Integer),
-                 Column('AST_PCT', Integer),
-                 Column('AST_TO', Integer),
-                 Column('AST_RATIO', Integer),
-                 Column('OREB_PCT', Integer),
-                 Column('DREB_PCT', Integer),
-                 Column('REB_PCT', Integer),
-                 Column('USG_PCT', Integer),
-                 Column('PACE', Integer),
-                 Column('PIE', Integer),
-                 Column('POSS', Integer),
-                 Column('DEFLECTIONS', Integer),
-                 Column('CHARGES_DRAWN', Integer),
-                 Column('SCREEN_ASSISTS', Integer),
-                 Column('PTS_OFF_TOV', Integer),
-                 Column('PTS_2ND_CHANCE', Integer),
-                 Column('PTS_FB', Integer),
-                 Column('PTS_PAINT', Integer),
-                 Column('OPP_PTS_OFF_TOV', Integer),
-                 Column('OPP_PTS_2ND_CHANCE', Integer),
-                 Column('OPP_PTS_FB', Integer),
-                 Column('OPP_PTS_PAINT', Integer),
-                 Column('OPP_FGM', Integer),
-                 Column('OPP_FGA', Integer),
-                 Column('OPP_FG_PCT', Integer),
-                 Column('OPP_FG3M', Integer),
-                 Column('OPP_FG3A', Integer),
-                 Column('OPP_FG3_PCT', Integer),
-                 Column('TEAM_NAME', String))
 
 # used to store information regarding a single NBA Game
 class NBAGame:

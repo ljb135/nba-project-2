@@ -1,11 +1,7 @@
+# NO IDEA WHAT THIS FILE DOES
 import urllib.request
 import gzip
 import json
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
-
-db = create_engine('sqlite:///NBAPlayers.db', echo=True)
-meta = MetaData()
-
 
 def get_seasonal_stats(season):
     param = f"{season - 1}-{str((season) % 100).zfill(2)}"
