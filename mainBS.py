@@ -62,22 +62,21 @@ def get_stats(season, home_players, away_players):
     home_stats = []
     for player in home_players:
         player_id = player["player"]
-        if player_id != "Select":
-            query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
-            conn = db.connect()
-            result = conn.execute(query)
+        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        conn = db.connect()
+        result = conn.execute(query)
 
-            result = result.fetchone().values()
-            delete_indexes = [13, 16, 19, 37, 38]
-            for index in sorted(delete_indexes, reverse=True):
-                del result[index]
-            del result[:9]
-            home_stats.append(result)
+        result = result.fetchone().values()
+        delete_indexes = [13, 16, 19, 37, 38]
+        for index in sorted(delete_indexes, reverse=True):
+            del result[index]
+        del result[:9]
+        home_stats.append(result)
 
     away_stats = []
     for player in away_players:
         player_id = player["player"]
-        if player_id != "Select":
+        if player_id != "Default":
             query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
             conn = db.connect()
             result = conn.execute(query)
@@ -147,7 +146,7 @@ def home_page():
 def form_page():
     form = PlayerSelectionForm()
 
-    if request.method == "POST" and form.validate_on_submit():
+    if request.method == "POST" and form.validate():
         season = form.season.data
         home_players = form.home_players.data
         away_players = form.away_players.data

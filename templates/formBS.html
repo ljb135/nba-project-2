@@ -4,6 +4,13 @@
 
 {% macro render_field(field) %}
     {{ field }}
+    {% if field.errors %}
+        {% for error in field.errors %}
+            <br><small id="error" class="form-text text-danger ">
+                {{ error }}
+            </small>
+        {% endfor %}
+    {% endif %}
 {% endmacro %}
 
 <div id="hero" class="bg-image bg-dark text-light" style= "background-image: url('/static/NBA_banner.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center 37%; height: 25vh; max-width: 100vw;
@@ -17,25 +24,25 @@
         <div class="card-group">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">1. Select a Season</h5>
+                    <h4 class="card-title">1. Select a Season</h4>
                     <p class="card-text">Choose which season's players and stats you would like to use.</p>
                 </div>
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h4 class= "card-title">2. Enter the Players</h5>
+                    <h4 class= "card-title">2. Enter the Players</h4>
                     <p class="card-text">Enter any 8 players on each team OR use the autofill dropdown to automatically fill in the players from the selected team.</p>
                 </div>
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">3. Predict the Game</h5>
+                    <h4 class="card-title">3. Predict the Game</h4>
                     <p class="card-text">Click predict to see the likelihood that the home team wins.</p>
                 </div>
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">4. Repeat!</h5>
+                    <h4 class="card-title">4. Repeat!</h4>
                     <p class="card-text">Edit the teams or swap home/away and predict again.</p>
                 </div>
             </div>
@@ -69,7 +76,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xxl-5 col-12 col-sm-6 text-center mt-4 mt-sm-0"">
+      <div class="col-xxl-5 col-12 col-sm-6 text-center mt-4 mt-sm-0">
         <div class="row justify-content-center">
           <div class="col-lg-7 align-self-center order-last order-lg-first">
               {% for away_player in form.away_players %}

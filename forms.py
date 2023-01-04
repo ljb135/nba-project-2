@@ -79,7 +79,7 @@ class NonValidatingSelectField(SelectField):
 # Form for a single player to be duplicated in PlayerSelectionForm
 class PlayerForm(Form):
     player_options = playerlist()
-    player = NonValidatingSelectField('Player', validators=[NoneOf(values=["Default"], message="Please select a player.")], choices=player_options, default="Default")
+    player = SelectField('Player', validators=[NoneOf(values=["Default"], message="Please select a player.")], choices=player_options, default="Default")
 
 
 # User entry form for entering players on home/away teams
