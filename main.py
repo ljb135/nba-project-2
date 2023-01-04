@@ -1,80 +1,87 @@
-from flask import Flask, render_template, jsonify, request, flash, send_from_directory
+from flask import Flask, render_template, request, jsonify, flash
 from forms import PlayerSelectionForm
-import numpy as np
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
-from ML_Models.ML_Data_Collection import Team
+import numpy as np
 import pickle
+from team import Team
 
 # WebApp configuration and file paths
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 meta = MetaData()
-Pkl_Filename = "NBA_LRModel.pkl"
+Pkl_Filename = "ML_Models/models/NBA_RFModel.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 
 # Table format from database
-players2 = Table('players2', meta,
-                 Column('NAME', String),
+players = Table('v_players3', meta,
+                 Column('PLAYER_NAME', String),
                  Column('PLAYER_ID', String, primary_key=True),
-                 Column('TEAM_ABR', String),
                  Column('TEAM_ID', String),
-                 Column('YEAR', String, primary_key=True),
+                 Column('TEAM_ABBREVIATION', String),
+                 Column('SEASON', String, primary_key=True),
                  Column('AGE', Integer),
-                 Column('HEIGHT', Integer),
-                 Column('WEIGHT', Integer),
+                 Column('PLAYER_HEIGHT_INCHES', Integer),
+                 Column('PLAYER_WEIGHT', Integer),
+                 Column('DRAFT_YEAR', String),
+                 Column('DRAFT_ROUND', Integer),
+                 Column('DRAFT_NUMBER', Integer),
                  Column('GP', Integer),
                  Column('MIN', Integer),
                  Column('PTS', Integer),
-                 Column('FTM', Integer),
-                 Column('FTA', Integer),
-                 Column('FT_PCT', Integer),
+                 Column('EFG_PCT', Integer),
+                 Column('TS_PCT', Integer),
                  Column('FGM', Integer),
                  Column('FGA', Integer),
                  Column('FG_PCT', Integer),
                  Column('FG3M', Integer),
                  Column('FG3A', Integer),
                  Column('FG3_PCT', Integer),
+                 Column('FTM', Integer),
+                 Column('FTA', Integer),
+                 Column('FT_PCT', Integer),
+                 Column('OREB', Integer),
+                 Column('DREB', Integer),
+                 Column('REB', Integer),
                  Column('AST', Integer),
                  Column('TOV', Integer),
                  Column('STL', Integer),
                  Column('BLK', Integer),
-                 Column('OREB', Integer),
-                 Column('DREB', Integer),
                  Column('PF', Integer),
-                 Column('OFF_RTG', Integer),
-                 Column('DEF_RTG', Integer),
-                 Column('DEFL', Integer),
-                 Column('LB_REC', Integer),
-                 Column('CONT_2P', Integer),
-                 Column('CONT_3P', Integer),
-                 Column('DFG2M', Integer),
-                 Column('DFG2A', Integer),
-                 Column('DFG3M', Integer),
-                 Column('DFG3A', Integer))
-
-
-# Checks if both teams have at least one player and have the same number of players
-def player_validation(away_players, home_players):
-    away_players_selected = 0
-    for away_player in away_players:
-        if away_player["player"] != "Select":
-            away_players_selected += 1
-
-    home_players_selected = 0
-    for home_player in home_players:
-        if home_player["player"] != "Select":
-            home_players_selected += 1
-
-    if away_players_selected < 8 and home_players_selected < 8:
-        return "Please enter eight players on both teams."
-    if home_players_selected < 8:
-        return "Please add more players to the home team."
-    if away_players_selected < 8:
-        return "Please add more players to the away team."
-    else:
-        return "Validated"
+                 Column('PFD', Integer),
+                 Column('PLUS_MINUS', Integer),
+                 Column('OFF_RATING', Integer),
+                 Column('DEF_RATING', Integer),
+                 Column('NET_RATING', Integer),
+                 Column('AST_PCT', Integer),
+                 Column('AST_TO', Integer),
+                 Column('AST_RATIO', Integer),
+                 Column('OREB_PCT', Integer),
+                 Column('DREB_PCT', Integer),
+                 Column('REB_PCT', Integer),
+                 Column('USG_PCT', Integer),
+                 Column('PACE', Integer),
+                 Column('PIE', Integer),
+                 Column('POSS', Integer),
+                 Column('DEFLECTIONS', Integer),
+                 Column('CHARGES_DRAWN', Integer),
+                 Column('SCREEN_ASSISTS', Integer),
+                 Column('PTS_OFF_TOV', Integer),
+                 Column('PTS_2ND_CHANCE', Integer),
+                 Column('PTS_FB', Integer),
+                 Column('PTS_PAINT', Integer),
+                 Column('OPP_PTS_OFF_TOV', Integer),
+                 Column('OPP_PTS_2ND_CHANCE', Integer),
+                 Column('OPP_PTS_FB', Integer),
+                 Column('OPP_PTS_PAINT', Integer),
+                 Column('OPP_FGM', Integer),
+                 Column('OPP_FGA', Integer),
+                 Column('OPP_FG_PCT', Integer),
+                 Column('OPP_FG3M', Integer),
+                 Column('OPP_FG3A', Integer),
+                 Column('OPP_FG3_PCT', Integer),
+                 Column('TEAM_NAME', String))
 
 
 # Processes information entered into form - returns an array of stats to be analyzed by our model
@@ -82,56 +89,38 @@ def get_stats(season, home_players, away_players):
     home_stats = []
     for player in home_players:
         player_id = player["player"]
-        if player_id != "Select":
-            query = select([players2]).where(and_(players2.c.YEAR == season, players2.c.PLAYER_ID == player_id))
-            conn = db.connect()
-            result = conn.execute(query)
+        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        conn = db.connect()
+        result = conn.execute(query)
 
-            result = result.fetchone().values()
-            del result[26]
-            del result[6:8]
-            del result[:5]
-            home_stats.append(result)
+        result = result.fetchone().values()
+        delete_indexes = [13, 16, 19, 37, 38]
+        for index in sorted(delete_indexes, reverse=True):
+            del result[index]
+        del result[:9]
+        home_stats.append(result)
 
     away_stats = []
     for player in away_players:
         player_id = player["player"]
-        if player_id != "Select":
-            query = select([players2]).where(and_(players2.c.YEAR == season, players2.c.PLAYER_ID == player_id))
-            conn = db.connect()
-            result = conn.execute(query)
+        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        conn = db.connect()
+        result = conn.execute(query)
 
-            result = result.fetchone().values()
-            del result[26]
-            del result[6:8]
-            del result[:5]
-            away_stats.append(result)
+        result = result.fetchone().values()
+        delete_indexes = [13, 16, 19, 37, 38]
+        for index in sorted(delete_indexes, reverse=True):
+            del result[index]
+        del result[:9]
+        away_stats.append(result)
 
     return np.array(stats_mod(home_stats, away_stats))
 
 
 def stats_mod(home_players, away_players):
-    game_data_array = []  # array that stores the stats --> corresponds to a single row in the CSV file
-    edit_stat_indexes = [1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15, 16, 17, 18]  # indexes of stats to be modified
-
-    home_total_min = 0
-    away_total_min = 0
-
-    for player in home_players:
-        home_total_min += player[1]
-    for player in away_players:
-        away_total_min += player[1]
-
-    home_min_ratio = 5*48/home_total_min
-    away_min_ratio = 5*48/away_total_min
-
-    # loops through all players on both teams and edits stats using minutes ratio
-    for player_number in range(len(home_players)):
-        for index in edit_stat_indexes:
-            home_players[player_number][index] = home_players[player_number][index] * home_min_ratio
-    for player_number in range(len(away_players)):
-        for index in edit_stat_indexes:
-            away_players[player_number][index] = away_players[player_number][index] * away_min_ratio
+    game_data_array = []
+    calc_stats(home_players, 240)
+    calc_stats(away_players, 240)
 
     game_data_array.extend(Team(home_players).export())
     game_data_array.extend(Team(away_players).export())
@@ -139,34 +128,63 @@ def stats_mod(home_players, away_players):
     return game_data_array
 
 
+def calc_stats(players, rem_min):
+    overflow = False
+    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]
+
+    total_min = 0
+    for player in players:
+        total_min += player[0]
+    min_ratio = rem_min / total_min
+
+    adj_players = []
+    not_adj_players = []
+    for player in players:
+        if player[0] * min_ratio > 40:
+            min_ratio = 40 / player[0]
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+            overflow = True
+            adj_players.append(player)
+        else:
+            not_adj_players.append(player)
+
+    if not overflow:
+        for player in players:
+            for index in edit_stat_indexes:
+                player[index] = player[index] * min_ratio
+    else:
+        adj_min = 0
+        for player in adj_players:
+            adj_min += player[0]
+        calc_stats(not_adj_players, rem_min - adj_min)
+
+
 # Route for webapp homepage - contains form
-@app.route('/', methods=('GET', 'POST'))
-@app.route('/home', methods=('GET', 'POST'))
-def homepage():
+@app.route('/')
+@app.route('/home')
+def home_page():
+    return render_template('home.html', title='Home')
+
+
+# Route for form page
+@app.route('/form', methods=('GET', 'POST'))
+def form_page():
     form = PlayerSelectionForm()
 
-    player_choices = [("Select", "Select")]
-    for home_player in form.home_players:
-        home_player.player.choices = player_choices
-    for away_player in form.away_players:
-        away_player.player.choices = player_choices
-
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         season = form.season.data
         home_players = form.home_players.data
         away_players = form.away_players.data
 
-        if player_validation(away_players, home_players) != "Validated":
-            flash(player_validation(away_players, home_players), "error")
-        else:
-            stats = np.array([get_stats(season, home_players, away_players)])
-            print(stats)
-            prediction = model.predict_proba(stats)
-            message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
-            flash(message, "success")
+        stats = np.array([get_stats(season, home_players, away_players)])
+        print("Home: ", stats[0][0:20])
+        print("Away: ", stats[0][20:])
+        prediction = model.predict_proba(stats)
+        message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
+        flash(message)
 
-    # return render_template('request.html', form=form, title='Home')
-    return render_template('formBS.html', title='Home')
+    return render_template('form.html', title='Form', form=form)
 
 
 # Route for about us page
@@ -178,7 +196,7 @@ def about_page():
 # Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
-    query = select([players2.c.PLAYER_ID, players2.c.TEAM, players2.c.NAME]).where(players2.c.YEAR == year)
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(players.c.YEAR == year)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -186,26 +204,8 @@ def playerlist(year):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM
-        playerObj["player_id"] = player.PLAYER_ID
-        player_array.append(playerObj)
-
-    return jsonify({"players": player_array})
-
-
-# Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
-@app.route('/autofill/<year>/<team_id>')
-def autofill(year, team_id):
-    query = select([players2.c.PLAYER_ID, players2.c.TEAM_ABR, players2.c.NAME]).where(and_(players2.c.YEAR == year, players2.c.TEAM_ID == team_id)).order_by((players2.c.MIN * players2.c.GP).desc()).limit(8)
-    conn = db.connect()
-    result = conn.execute(query)
-
-    player_array = []
-
-    for player in result:
-        playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM
-        playerObj["player_id"] = player.PLAYER_ID
+        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
+        playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
     return jsonify({"players": player_array})
@@ -214,7 +214,8 @@ def autofill(year, team_id):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players2.c.TEAM_ID, players2.c.TEAM_NAME]).where(players2.c.YEAR == year).distinct().order_by(players2.c.TEAM_NAME)
+    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct().order_by(
+        players.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -223,14 +224,30 @@ def teamlist(year):
     for team in result:
         teamObj = {}
         teamObj["name"] = team.TEAM_NAME
-        teamObj["team_id"] = team.TEAM_ID
+        teamObj["teamID"] = team.TEAM_ID
         team_array.append(teamObj)
 
     return jsonify({"teams": team_array})
 
-# @app.route('/img/NBA_background.png')
-# def send_file(filename):
-#     return send_from_directory(, filename)
+
+# Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
+@app.route('/autofill/<year>/<team_id>')
+def autofill(year, team_id):
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(
+        and_(players.c.YEAR == year, players.c.TEAM_ID == team_id, players.c.GP > 30, players.c.INJ == 0)).order_by(
+        (players.c.MIN).desc()).limit(8)
+    conn = db.connect()
+    result = conn.execute(query)
+
+    player_array = []
+
+    for player in result:
+        playerObj = {}
+        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
+        playerObj["playerID"] = player.PLAYER_ID
+        player_array.append(playerObj)
+
+    return jsonify({"players": player_array})
 
 
 if __name__ == '__main__':

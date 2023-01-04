@@ -5,7 +5,7 @@ import datetime
 import gzip
 import json
 import csv
-from Team import Team
+from team import Team
 import re
 import pandas as pd
 

@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, select, and_
-from Team import Team
+from team import Team
 import pickle
 import numpy as np
 import random
