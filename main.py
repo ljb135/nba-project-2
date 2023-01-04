@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, select, and_
 import numpy as np
 import pickle
 from team import Team
-from Players_Schema import Players_Table
+from players_schema import Players_Table
 
 # WebApp configuration and file paths
 app = Flask(__name__)

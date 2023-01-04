@@ -2,7 +2,7 @@ import urllib.request
 import gzip
 import json
 from sqlalchemy import create_engine
-from Players_Schema import Players_Table
+from players_schema import Players_Table
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=True)
 players = Players_Table.__table__

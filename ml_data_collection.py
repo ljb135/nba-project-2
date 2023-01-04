@@ -8,7 +8,7 @@ import csv
 from team import Team
 import re
 import pandas as pd
-from Players_Schema import Players_Table
+from players_schema import Players_Table
 
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)

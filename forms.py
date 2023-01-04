@@ -3,7 +3,7 @@ from wtforms import SelectField, Form, FormField, FieldList
 from wtforms.validators import NoneOf
 from sqlalchemy import create_engine, select
 from datetime import date
-from Players_Schema import Players_Table
+from players_schema import Players_Table
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
 players = Players_Table.__table__
