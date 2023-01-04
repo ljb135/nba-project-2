@@ -89,7 +89,7 @@ def get_stats(season, home_players, away_players):
     home_stats = []
     for player in home_players:
         player_id = player["player"]
-        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        query = select([players]).where(and_(players.c.SEASON == season, players.c.PLAYER_ID == player_id))
         conn = db.connect()
         result = conn.execute(query)
 
@@ -103,7 +103,7 @@ def get_stats(season, home_players, away_players):
     away_stats = []
     for player in away_players:
         player_id = player["player"]
-        query = select([players]).where(and_(players.c.YEAR == season, players.c.PLAYER_ID == player_id))
+        query = select([players]).where(and_(players.c.SEASON == season, players.c.PLAYER_ID == player_id))
         conn = db.connect()
         result = conn.execute(query)
 
@@ -196,7 +196,7 @@ def about_page():
 # Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
-    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(players.c.YEAR == year)
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABBREVIATION, players.c.PLAYER_NAME]).where(players.c.SEASON == year)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -204,7 +204,7 @@ def playerlist(year):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
+        playerObj["name"] = player.PLAYER_NAME + ", " + player.TEAM_ABBREVIATION
         playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
@@ -214,7 +214,7 @@ def playerlist(year):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.YEAR == year).distinct().order_by(
+    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.SEASON == year).distinct().order_by(
         players.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
@@ -233,8 +233,8 @@ def teamlist(year):
 # Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/autofill/<year>/<team_id>')
 def autofill(year, team_id):
-    query = select([players.c.PLAYER_ID, players.c.TEAM_ABR, players.c.NAME]).where(
-        and_(players.c.YEAR == year, players.c.TEAM_ID == team_id, players.c.GP > 30, players.c.INJ == 0)).order_by(
+    query = select([players.c.PLAYER_ID, players.c.TEAM_ABBREVIATION, players.c.PLAYER_NAME]).where(
+        and_(players.c.SEASON == year, players.c.TEAM_ID == team_id, players.c.MIN*players.c.GP > 100)).order_by(
         (players.c.MIN).desc()).limit(8)
     conn = db.connect()
     result = conn.execute(query)
@@ -243,7 +243,7 @@ def autofill(year, team_id):
 
     for player in result:
         playerObj = {}
-        playerObj["name"] = player.NAME + ", " + player.TEAM_ABR
+        playerObj["name"] = player.PLAYER_NAME + ", " + player.TEAM_ABBREVIATION
         playerObj["playerID"] = player.PLAYER_ID
         player_array.append(playerObj)
 
