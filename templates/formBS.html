@@ -3,14 +3,14 @@
 {% block content %}
 
 {% macro render_field(field) %}
-    {{ field }}
-    {% if field.errors %}
-        {% for error in field.errors %}
-            <br><small id="error" class="form-text text-danger ">
-                {{ error }}
-            </small>
-        {% endfor %}
-    {% endif %}
+  {{ field }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
 {% endmacro %}
 
 <div id="hero" class="bg-image bg-dark text-light" style= "background-image: url('/static/NBA_banner.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center 37%; height: 25vh; max-width: 100vw;
