@@ -143,7 +143,7 @@ result = conn.execute(query)
 stats_list = []
 for team in result:
     stats_list.append(get_stats(team.TEAM_ABR))
-filename = "Data/team_stats.csv"
+filename = "team_stats.csv"
 print(stats_list)
 with open(filename, 'a', newline='') as csv_file:
     csv_writer = csv.writer(csv_file)  # creating a csv writer object
