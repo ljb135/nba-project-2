@@ -11,60 +11,45 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ao19s2en1638nsh6msh172kd0s72ksj2'
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
-players = Players_Table.__table__
+players_table = Players_Table.__table__
 
 Pkl_Filename = "ML_Models/models/NBA_RFModel.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 
-# Processes information entered into form - returns an array of stats to be analyzed by our model
+
+# Executes queries - returns dictionaries of home and away player stats
 def get_stats(season, home_players, away_players):
-    home_stats = []
-    for player in home_players:
-        player_id = player["player"]
-        query = select([players]).where(and_(players.c.SEASON == season, players.c.PLAYER_ID == player_id))
-        conn = db.connect()
-        result = conn.execute(query)
+    query = select([players_table]).where(
+        and_(players_table.c.SEASON == season, players_table.c.PLAYER_ID.in_(home_players)))
+    conn = db.connect()
+    result = conn.execute(query)
+    home_stats = [dict(r) for r in result]
 
-        print(result)
-        print(type(result))
+    query = select([players_table]).where(
+        and_(players_table.c.SEASON == season, players_table.c.PLAYER_ID.in_(away_players)))
+    conn = db.connect()
+    result = conn.execute(query)
+    away_stats = [dict(r) for r in result]
 
-        result = result.fetchone().values()
-        delete_indexes = [13, 16, 19, 37, 38]
-        for index in sorted(delete_indexes, reverse=True):
-            del result[index]
-        del result[:9]
-        home_stats.append(result)
-
-    away_stats = []
-    for player in away_players:
-        player_id = player["player"]
-        query = select([players]).where(and_(players.c.SEASON == season, players.c.PLAYER_ID == player_id))
-        conn = db.connect()
-        result = conn.execute(query)
-
-        result = result.fetchone().values()
-        delete_indexes = [13, 16, 19, 37, 38]
-        for index in sorted(delete_indexes, reverse=True):
-            del result[index]
-        del result[:9]
-        away_stats.append(result)
-
-    return np.array(stats_mod(home_stats, away_stats))
+    return home_stats, away_stats
 
 
-def stats_mod(home_players, away_players):
+# Processes information entered into form - returns an array of stats to be analyzed by our model
+def stats_mod(season, home_players, away_players):
+    home_stats, away_stats = get_stats(season, home_players, away_players)
+
     game_data_array = []
-    calc_stats(home_players, 240)
-    calc_stats(away_players, 240)
+    adjust_for_minutes(home_stats, 240)
+    adjust_for_minutes(away_stats, 240)
 
-    game_data_array.extend(Team(home_players).export())
-    game_data_array.extend(Team(away_players).export())
+    game_data_array.extend(Team(home_stats).export())
+    game_data_array.extend(Team(away_stats).export())
 
-    return game_data_array
+    return np.array(game_data_array)
 
 
-def calc_stats(players, rem_min):
+def adjust_for_minutes(players, rem_min):
     overflow = False
     edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]
 
@@ -93,7 +78,7 @@ def calc_stats(players, rem_min):
         adj_min = 0
         for player in adj_players:
             adj_min += player[0]
-        calc_stats(not_adj_players, rem_min - adj_min)
+        adjust_for_minutes(not_adj_players, rem_min - adj_min)
 
 
 # Route for webapp homepage - contains form
@@ -110,10 +95,10 @@ def form_page():
 
     if request.method == "POST" and form.validate():
         season = form.season.data
-        home_players = form.home_players.data
-        away_players = form.away_players.data
+        home_players = [row["player"] for row in form.home_players.data]
+        away_players = [row["player"] for row in form.away_players.data]
 
-        stats = np.array([get_stats(season, home_players, away_players)])
+        stats = np.array([stats_mod(season, home_players, away_players)])
         print("Home: ", stats[0][0:20])
         print("Away: ", stats[0][20:])
         prediction = model.predict_proba(stats)
@@ -132,7 +117,8 @@ def about_page():
 # Queries database for list of names given the year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/playerlist/<year>')
 def playerlist(year):
-    query = select([players.c.PLAYER_ID, players.c.TEAM_ABBREVIATION, players.c.PLAYER_NAME]).where(players.c.SEASON == year)
+    query = select([players_table.c.PLAYER_ID, players_table.c.TEAM_ABBREVIATION, players_table.c.PLAYER_NAME]).where(
+        players_table.c.SEASON == year)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -150,8 +136,9 @@ def playerlist(year):
 # Queries database for list of teams given the year - returns a JSON dictionary of objects containing team name and ID
 @app.route('/teamlist/<year>')
 def teamlist(year):
-    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.SEASON == year).distinct().order_by(
-        players.c.TEAM_NAME)
+    query = select([players_table.c.TEAM_ID, players_table.c.TEAM_NAME]).where(
+        players_table.c.SEASON == year).distinct().order_by(
+        players_table.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
 
@@ -169,9 +156,10 @@ def teamlist(year):
 # Queries database for list of names given the team and year - returns a JSON dictionary of objects containing player name and ID
 @app.route('/autofill/<year>/<team_id>')
 def autofill(year, team_id):
-    query = select([players.c.PLAYER_ID, players.c.TEAM_ABBREVIATION, players.c.PLAYER_NAME]).where(
-        and_(players.c.SEASON == year, players.c.TEAM_ID == team_id, players.c.MIN * players.c.GP > 100)).order_by(
-        (players.c.MIN).desc()).limit(8)
+    query = select([players_table.c.PLAYER_ID, players_table.c.TEAM_ABBREVIATION, players_table.c.PLAYER_NAME]).where(
+        and_(players_table.c.SEASON == year, players_table.c.TEAM_ID == team_id,
+             players_table.c.MIN * players_table.c.GP > 100)).order_by(
+        (players_table.c.MIN).desc()).limit(8)
     conn = db.connect()
     result = conn.execute(query)
 
