@@ -3,13 +3,13 @@ from wtforms import SelectField, Form, FormField, FieldList
 from wtforms.validators import NoneOf
 from sqlalchemy import create_engine, select
 from datetime import date
-from players_schema import Players_Table
+from v_players_schema import Players_Table
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
-players = Players_Table.__table__
+players_table = Players_Table.__table__
 
 def playerlist():
-    query = select([players.c.PLAYER_ID, players.c.TEAM_ABBREVIATION, players.c.PLAYER_NAME]).where(players.c.SEASON == f'{date.today().year}')
+    query = select([players_table.c.PLAYER_ID, players_table.c.TEAM_ABBREVIATION, players_table.c.PLAYER_NAME]).where(players_table.c.SEASON == f'{date.today().year}')
     conn = db.connect()
     result = conn.execute(query)
 
@@ -20,8 +20,8 @@ def playerlist():
 
 
 def teamlist():
-    query = select([players.c.TEAM_ID, players.c.TEAM_NAME]).where(players.c.SEASON == f'{date.today().year}').distinct().order_by(
-        players.c.TEAM_NAME)
+    query = select([players_table.c.TEAM_ID, players_table.c.TEAM_NAME]).where(players_table.c.SEASON == f'{date.today().year}').distinct().order_by(
+        players_table.c.TEAM_NAME)
     conn = db.connect()
     result = conn.execute(query)
 

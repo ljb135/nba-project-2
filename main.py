@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, select, and_
 import numpy as np
 import pickle
 from team import Team
-from players_schema import Players_Table
+from v_players_schema import Players_Table
 
 # WebApp configuration and file paths
 app = Flask(__name__)
@@ -17,6 +17,18 @@ Pkl_Filename = "ML_Models/models/NBA_RFModel.pkl"
 with open(Pkl_Filename, 'rb') as file:
     model = pickle.load(file)
 
+# Processes information entered into form - returns an array of stats to be analyzed by our model
+def stats_mod(season, home_players, away_players):
+    home_stats, away_stats = get_stats(season, home_players, away_players)
+
+    game_data_array = []
+    adjust_for_minutes(home_stats, 240)
+    adjust_for_minutes(away_stats, 240)
+
+    game_data_array.extend(Team(home_stats).export())
+    game_data_array.extend(Team(away_stats).export())
+
+    return np.array(game_data_array)
 
 # Executes queries - returns dictionaries of home and away player stats
 def get_stats(season, home_players, away_players):
@@ -34,21 +46,7 @@ def get_stats(season, home_players, away_players):
 
     return home_stats, away_stats
 
-
-# Processes information entered into form - returns an array of stats to be analyzed by our model
-def stats_mod(season, home_players, away_players):
-    home_stats, away_stats = get_stats(season, home_players, away_players)
-
-    game_data_array = []
-    adjust_for_minutes(home_stats, 240)
-    adjust_for_minutes(away_stats, 240)
-
-    game_data_array.extend(Team(home_stats).export())
-    game_data_array.extend(Team(away_stats).export())
-
-    return np.array(game_data_array)
-
-
+# Adjusts the player stats to account for their selected teammates
 def adjust_for_minutes(players, rem_min):
     overflow = False
     edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]

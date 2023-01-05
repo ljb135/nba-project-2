@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class Players_Table(Base):
-    __tablename__ = "players"
+    __tablename__ = "v_players"
 
     PLAYER_NAME = Column(String)
     PLAYER_ID = Column(String, primary_key=True)
@@ -67,3 +67,4 @@ class Players_Table(Base):
     DFG2M = Column(Integer)
     DFG2A = Column(Integer)
     DFG2_PCT = Column(Integer)
+    TEAM_NAME = Column(String)

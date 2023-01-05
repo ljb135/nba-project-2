@@ -3,10 +3,11 @@ import gzip
 import json
 from sqlalchemy import create_engine
 from players_schema import Players_Table
+from sqlalchemy.ext.declarative import declarative_base
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=True)
-players = Players_Table.__table__
-# Base.metadata.create_all(db)
+players_table = Players_Table.__table__
+# players_table.create(db)
 
 def get_seasonal_stats(season):
     season_stats = {}
@@ -38,8 +39,7 @@ def get_seasonal_stats(season):
     stat_indexes = {stat: index for index, stat in enumerate(headers) if stat in stat_fields}
 
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[stat_indexes["PLAYER_NAME"]] is None or player[stat_indexes["MIN"]] * player[
-            stat_indexes["GP"]] < 100:
+        if player[stat_indexes["PLAYER_NAME"]] is None or player[stat_indexes["MIN"]] < 8 or player[stat_indexes["MIN"]] * player[stat_indexes["GP"]] < 100:
             continue
         player_id = player[stat_indexes["PLAYER_ID"]]
         season_stats[player_id] = [str(season)] + [player[i] for i in list(stat_indexes.values())]
@@ -259,13 +259,13 @@ stat_names = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATIO
 # print(len(player_stats[203932]))
 # print(dict(zip(stat_names, player_stats[203932])))
 
-for year in range(2020, 2022):
+for year in range(2019, 2024):
     print(f"starting {year}")
     player_stats = get_seasonal_stats(year)
     for player in player_stats:
         stats = dict(zip(stat_names, player_stats[player]))
-        if len(stats) == 65:
-            query = players.insert().values(
+        if len(stats) == 61:
+            query = players_table.insert().values(
                 PLAYER_NAME=stats['PLAYER_NAME'],
                 PLAYER_ID=stats['PLAYER_ID'],
                 TEAM_ID=stats['TEAM_ID'],
