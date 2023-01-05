@@ -198,12 +198,12 @@ def get_seasonal_stats(season):
     stat_fields = {"CLOSE_DEF_PERSON_ID", 'FG3M', 'FG3A', 'FG3_PCT'}
 
     headers = json_file["resultSets"][0]["headers"]
-    stat_indexes = {"DEF_"+stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+    stat_indexes = {"D"+stat: index for index, stat in enumerate(headers) if stat in stat_fields}
 
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[stat_indexes['DEF_CLOSE_DEF_PERSON_ID']] is None:
+        if player[stat_indexes['DCLOSE_DEF_PERSON_ID']] is None:
             continue
-        player_id = player[stat_indexes["DEF_CLOSE_DEF_PERSON_ID"]]
+        player_id = player[stat_indexes["DCLOSE_DEF_PERSON_ID"]]
         try:
             season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
         except Exception:
@@ -231,12 +231,12 @@ def get_seasonal_stats(season):
     stat_fields = {"CLOSE_DEF_PERSON_ID", 'FG2M', 'FG2A', 'FG2_PCT'}
 
     headers = json_file["resultSets"][0]["headers"]
-    stat_indexes = {"DEF_" + stat: index for index, stat in enumerate(headers) if stat in stat_fields}
+    stat_indexes = {"D" + stat: index for index, stat in enumerate(headers) if stat in stat_fields}
 
     for player in json_file["resultSets"][0]["rowSet"]:
-        if player[stat_indexes['DEF_CLOSE_DEF_PERSON_ID']] is None:
+        if player[stat_indexes['DCLOSE_DEF_PERSON_ID']] is None:
             continue
-        player_id = player[stat_indexes["DEF_CLOSE_DEF_PERSON_ID"]]
+        player_id = player[stat_indexes["DCLOSE_DEF_PERSON_ID"]]
         try:
             season_stats[player_id].extend([player[i] for i in list(stat_indexes.values())[1:]])
         except Exception:
@@ -253,11 +253,11 @@ stat_names = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATIO
               'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'AST_PCT', 'AST_TO', 'AST_RATIO', 'OREB_PCT',
               'DREB_PCT', 'REB_PCT', 'EFG_PCT', 'TS_PCT', 'USG_PCT', 'PACE', 'PIE', 'POSS',
               'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT',
-              'DEF_FG3M', 'DEF_FG3A', 'DEF_FG3_PCT', 'DEF_FG2M', 'DEF_FG2A', 'DEF_FG2_PCT']
+              'DFG3M', 'DFG3A', 'DFG3_PCT', 'DFG2M', 'DFG2A', 'DFG2_PCT']
 
-player_stats = get_seasonal_stats(2023)
-print(len(player_stats[203932]))
-print(dict(zip(stat_names, player_stats[203932])))
+# player_stats = get_seasonal_stats(2023)
+# print(len(player_stats[203932]))
+# print(dict(zip(stat_names, player_stats[203932])))
 
 for year in range(2020, 2022):
     print(f"starting {year}")
@@ -321,12 +321,12 @@ for year in range(2020, 2022):
                 PTS_2ND_CHANCE=stats['PTS_2ND_CHANCE'],
                 PTS_FB=stats['PTS_FB'],
                 PTS_PAINT=stats['PTS_PAINT'],
-                DEF_FG3M=stats['DEF_FG3M'],
-                DEF_FG3A=stats['DEF_FG3A'],
-                DEF_FG3_PCT=stats['DEF_FG3_PCT'],
-                DEF_FG2M=stats['DEF_FG2M'],
-                DEF_FG2A=stats['DEF_FG2A'],
-                DEF_FG2_PCT=stats['DEF_FG2_PCT']
+                DFG3M=stats['DFG3M'],
+                DFG3A=stats['DFG3A'],
+                DFG3_PCT=stats['DFG3_PCT'],
+                DFG2M=stats['DFG2M'],
+                DFG2A=stats['DFG2A'],
+                DFG2_PCT=stats['DFG2_PCT']
             )
             print("running query")
             conn = db.connect()
