@@ -27,7 +27,7 @@ class Team:
         # TODO: Account for pace
         sum_stats = np.array(self.players_stats).sum(axis=0)
 
-        relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+        relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
                           'PF', 'OFF_RATING', 'DEF_RATING', 'PACE', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
 
         total_pts = sum_stats[relevant_stats.index('PTS')]

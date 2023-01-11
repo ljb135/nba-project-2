@@ -22,7 +22,7 @@ def stats_mod(season, home_players, away_players):
     # TODO: Account for pace
     home_stats, away_stats = get_stats(season, home_players, away_players)
 
-    relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+    relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
                       'PF', 'OFF_RATING', 'DEF_RATING', 'PACE', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
     home_stats = [{key: player[key] for key in relevant_stats} for player in home_stats]
     away_stats = [{key: player[key] for key in relevant_stats} for player in away_stats]
@@ -55,7 +55,7 @@ def get_stats(season, home_players, away_players):
 # Adjusts the player stats to account for their selected teammates
 def adjust_for_minutes(players, rem_min):
     overflow = False
-    scaled_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+    scaled_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
                     'PF', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
 
     total_min = 0
