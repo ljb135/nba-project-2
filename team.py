@@ -4,7 +4,6 @@ import numpy as np
 class Team:
     def __init__(self, players_stats):
         self.players_stats = players_stats
-        print(np.array(self.players_stats).shape)
 
         self.ts_pct = None
         self.fta = None
@@ -25,6 +24,7 @@ class Team:
 
     # calculates team stats using the player stats
     def __calculate(self):
+        # TODO: Account for pace
         sum_stats = np.array(self.players_stats).sum(axis=0)
 
         relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',

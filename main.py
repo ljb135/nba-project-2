@@ -19,6 +19,7 @@ with open(Pkl_Filename, 'rb') as file:
 
 # Processes information entered into form - returns an array of stats to be analyzed by our model
 def stats_mod(season, home_players, away_players):
+    # TODO: Account for pace
     home_stats, away_stats = get_stats(season, home_players, away_players)
 
     relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
