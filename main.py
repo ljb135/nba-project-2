@@ -21,12 +21,17 @@ with open(Pkl_Filename, 'rb') as file:
 def stats_mod(season, home_players, away_players):
     home_stats, away_stats = get_stats(season, home_players, away_players)
 
+    relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+                      'PF', 'OFF_RATING', 'DEF_RATING', 'PACE', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
+    home_stats = [{key: player[key] for key in relevant_stats} for player in home_stats]
+    away_stats = [{key: player[key] for key in relevant_stats} for player in away_stats]
+
     game_data_array = []
     adjust_for_minutes(home_stats, 240)
     adjust_for_minutes(away_stats, 240)
 
-    game_data_array.extend(Team(home_stats).export())
-    game_data_array.extend(Team(away_stats).export())
+    game_data_array.extend(Team([list(stats.values()) for stats in home_stats]).export())
+    game_data_array.extend(Team([list(stats.values()) for stats in away_stats]).export())
 
     return np.array(game_data_array)
 
@@ -49,20 +54,21 @@ def get_stats(season, home_players, away_players):
 # Adjusts the player stats to account for their selected teammates
 def adjust_for_minutes(players, rem_min):
     overflow = False
-    edit_stat_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24]
+    scaled_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+                    'PF', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
 
     total_min = 0
     for player in players:
-        total_min += player[0]
+        total_min += player['MIN']
     min_ratio = rem_min / total_min
 
     adj_players = []
     not_adj_players = []
     for player in players:
-        if player[0] * min_ratio > 40:
-            min_ratio = 40 / player[0]
-            for index in edit_stat_indexes:
-                player[index] = player[index] * min_ratio
+        if player['MIN'] * min_ratio > 42:
+            min_ratio = 42 / player['MIN']
+            for stat in scaled_stats:
+                player[stat] = player[stat] * min_ratio
             overflow = True
             adj_players.append(player)
         else:
@@ -70,12 +76,12 @@ def adjust_for_minutes(players, rem_min):
 
     if not overflow:
         for player in players:
-            for index in edit_stat_indexes:
-                player[index] = player[index] * min_ratio
+            for stat in scaled_stats:
+                player[stat] = player[stat] * min_ratio
     else:
         adj_min = 0
         for player in adj_players:
-            adj_min += player[0]
+            adj_min += player['MIN']
         adjust_for_minutes(not_adj_players, rem_min - adj_min)
 
 
@@ -97,8 +103,8 @@ def form_page():
         away_players = [row["player"] for row in form.away_players.data]
 
         stats = np.array([stats_mod(season, home_players, away_players)])
-        print("Home: ", stats[0][0:20])
-        print("Away: ", stats[0][20:])
+        print("Home: ", stats[0][0:14])
+        print("Away: ", stats[0][14:])
         prediction = model.predict_proba(stats)
         message = "The probability that the home team wins is " + str((prediction[0][1] * 100).round(1)) + "%"
         flash(message)

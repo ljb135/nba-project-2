@@ -4,6 +4,7 @@ import numpy as np
 class Team:
     def __init__(self, players_stats):
         self.players_stats = players_stats
+        print(np.array(self.players_stats).shape)
 
         self.ts_pct = None
         self.fta = None
@@ -26,21 +27,24 @@ class Team:
     def __calculate(self):
         sum_stats = np.array(self.players_stats).sum(axis=0)
 
-        total_pts = sum_stats[1]
-        total_fta = sum_stats[3]
-        total_fga = sum_stats[5]
-        total_3pa = sum_stats[7]
-        total_ast = sum_stats[8]
-        total_tov = sum_stats[9]
-        total_stl = sum_stats[10]
-        total_blk = sum_stats[11]
-        total_oreb = sum_stats[12]
-        total_dreb = sum_stats[13]
-        total_defl = sum_stats[14]
-        total_dfg2m = sum_stats[21]
-        total_dfg3m = sum_stats[23]
-        total_dfga = sum_stats[22] + sum_stats[24]
-        total_pf = sum_stats[14]
+        relevant_stats = ['MIN', 'PTS', 'FGA', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK',
+                          'PF', 'OFF_RATING', 'DEF_RATING', 'PACE', 'DEFLECTIONS', 'DFG3M', 'DFG3A', 'DFG2M', 'DFG2A']
+
+        total_pts = sum_stats[relevant_stats.index('PTS')]
+        total_fta = sum_stats[relevant_stats.index('FTA')]
+        total_fga = sum_stats[relevant_stats.index('FGA')]
+        total_3pa = sum_stats[relevant_stats.index('FG3A')]
+        total_ast = sum_stats[relevant_stats.index('AST')]
+        total_tov = sum_stats[relevant_stats.index('TOV')]
+        total_stl = sum_stats[relevant_stats.index('STL')]
+        total_blk = sum_stats[relevant_stats.index('BLK')]
+        total_oreb = sum_stats[relevant_stats.index('OREB')]
+        total_dreb = sum_stats[relevant_stats.index('DREB')]
+        total_defl = sum_stats[relevant_stats.index('DEFLECTIONS')]
+        total_dfg2m = sum_stats[relevant_stats.index('DFG2M')]
+        total_dfg3m = sum_stats[relevant_stats.index('DFG3M')]
+        total_dfga = sum_stats[relevant_stats.index('DFG2A')] + sum_stats[relevant_stats.index('DFG3A')]
+        total_pf = sum_stats[relevant_stats.index('PF')]
 
         # calculate true shooting percentage
         self.ts_pct = round(total_pts / (2 * (total_fga + (0.44 * total_fta))), 3)
@@ -79,9 +83,9 @@ class Team:
         self.pf = round(total_pf, 2)
 
         # calculate offensive/defensive rating
-        min_weights = [row[0] for row in self.players_stats]
-        off_rtg = [row[15] for row in self.players_stats]
-        def_rtg = [row[16] for row in self.players_stats]
+        min_weights = [player[relevant_stats.index('MIN')] for player in self.players_stats]
+        off_rtg = [player[relevant_stats.index('OFF_RATING')] for player in self.players_stats]
+        def_rtg = [player[relevant_stats.index('DEF_RATING')] for player in self.players_stats]
         self.off_rtg = round(np.average(off_rtg, weights=min_weights), 2)
         self.def_rtg = round(np.average(def_rtg, weights=min_weights), 2)
 
