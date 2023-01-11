@@ -3,13 +3,13 @@
 {% block content %}
 
 {% macro render_field(field) %}
-  {{ field }}
+  {{ field.form.player(class_="form-select") }}
   {% if field.errors %}
-    <ul class=errors>
-    {% for error in field.errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
+        {% for error in field.form.player.errors %}
+            <div id="error" class="small text-danger">
+                <h6>{{ error }}</h6>
+            </div>
+        {% endfor %}
   {% endif %}
 {% endmacro %}
 
@@ -69,7 +69,7 @@
                         <h4>{{ loop.index }}.</h4>
                   </div>
                   <div class="col">
-                        <h3>{{ render_field(home_player.player(class_="form-select")) }}</h3>
+                        <h3>{{ render_field(home_player) }}</h3>
                   </div>
               </div>
               {% endfor %}
@@ -85,7 +85,7 @@
                       <h4>{{ loop.index }}.</h4>
                   </div>
                   <div class="col">
-                      <h3>{{ render_field(away_player.player(class_="form-select")) }}</h3>
+                      <h3>{{ render_field(away_player) }}</h3>
                   </div>
               </div>
               {% endfor %}

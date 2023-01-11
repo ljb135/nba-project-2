@@ -259,7 +259,7 @@ stat_names = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATIO
 # print(len(player_stats[203932]))
 # print(dict(zip(stat_names, player_stats[203932])))
 
-for year in range(2019, 2024):
+for year in range(2022, 2024):
     print(f"starting {year}")
     player_stats = get_seasonal_stats(year)
     for player in player_stats:

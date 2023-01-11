@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, Form, FormField, FieldList
-from wtforms.validators import NoneOf
+from wtforms.validators import NoneOf, Required
 from sqlalchemy import create_engine, select
 from datetime import date
 from v_players_schema import Players_Table
@@ -31,11 +31,6 @@ def teamlist():
     return team_array
 
 
-class NonValidatingSelectField(SelectField):
-    def pre_validate(self, form):
-        pass
-
-
 # Form for a single player to be duplicated in PlayerSelectionForm
 class PlayerForm(Form):
     player_options = playerlist()
@@ -61,5 +56,5 @@ class PlayerSelectionForm(FlaskForm):
     season = SelectField('Season', choices=year_options, default=f"{current_year}")
     home_team = SelectField('Home_Team', choices=team_options, default="Default")
     away_team = SelectField('Away_Team', choices=team_options, default="Default")
-    home_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8)
-    away_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8)
+    home_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8, validators=[Required()])
+    away_players = FieldList(FormField(PlayerForm), min_entries=8, max_entries=8, validators=[Required()])
