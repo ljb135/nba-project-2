@@ -8,11 +8,11 @@ import csv
 from team import Team
 import re
 import pandas as pd
-from players_schema import Players_Table
+from v_players_schema import Players_Table
 
 
 db = create_engine('sqlite:///NBAPlayers.db', echo=False)
-players = Players_Table.__table__
+players_table = Players_Table.__table__
 conn = db.connect()
 
 

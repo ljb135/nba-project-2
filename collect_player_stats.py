@@ -259,13 +259,17 @@ stat_names = ['SEASON', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ID', 'TEAM_ABBREVIATIO
 # print(len(player_stats[203932]))
 # print(dict(zip(stat_names, player_stats[203932])))
 
-for year in range(2022, 2024):
+for year in range(2023, 2024):
     print(f"starting {year}")
     player_stats = get_seasonal_stats(year)
     for player in player_stats:
         stats = dict(zip(stat_names, player_stats[player]))
         if len(stats) == 61:
             query = players_table.insert().values(
+            # query = players_table.update().where(
+            #     (players_table.c.PLAYER_ID == stats['PLAYER_ID']) &
+            #     (players_table.c.SEASON == stats['SEASON'])
+            # ).values(
                 PLAYER_NAME=stats['PLAYER_NAME'],
                 PLAYER_ID=stats['PLAYER_ID'],
                 TEAM_ID=stats['TEAM_ID'],
